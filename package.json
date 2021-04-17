@@ -8,15 +8,16 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "venom-bot": "^3.0.14"
   },
   "devDependencies": {
-    "prettier": "^2.2.1",
-    "sucrase": "^3.18.1",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.2.0",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-prettier": "^3.4.0"
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.2.1",
+    "sucrase": "^3.18.1"
   }
 }
