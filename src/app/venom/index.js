@@ -24,9 +24,13 @@ class Bot {
     });
   }
 
-  async getToken(client) {
-    const token = await client.getSessionTokenBrowser();
-    return token;
+  connectToClient(clientToken) {
+    if (clientToken) create(clientToken).then(client => this.start(client));
+    else this.errorConnect();
+  }
+
+  errorConnect() {
+    return 'error';
   }
 
   start(client) {

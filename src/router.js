@@ -9,5 +9,10 @@ router.get('/', (req, res) => {
 });
 
 router.get('/bot', VenomController.stanceBot);
+router.post('/connect', VenomController.connectClient);
+router.post('/teste', (req, res) => {
+  console.log(req.body);
+  return res.json();
+});
 
 export default router;
