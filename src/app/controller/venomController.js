@@ -2,15 +2,16 @@ import Venom from '../venom';
 
 class VenomController {
   stanceBot(req, res) {
-    const bot = new Venom();
-    return res.json({ bot });
+    // eslint-disable-next-line no-new
+    new Venom();
+    return res.json();
   }
 
   async connectClient(req, res) {
     const { token } = req.body;
     const bot = new Venom();
-    const qrcode = await bot.connectToClient(token);
-    return res.json({ qrcode });
+    const status = await bot.connectToClient(token);
+    return res.json(status);
   }
 }
 

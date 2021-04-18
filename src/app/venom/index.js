@@ -1,42 +1,23 @@
 import { create } from 'venom-bot';
 
 class Bot {
-  // constructor() {
-  //   create(
-  //     'Jean',
-  //     // Catch QrCode
-  //     (base64Qr, asciiQr, attemps, urlCode) => {
-  //       console.log('QrCode', asciiQr);
-  //       console.log('Attemps', attemps);
-  //       console.log('urlCode', urlCode);
-  //     },
-  //     // Status Find
-  //     (statusSession, session) => {
-  //       console.log('statusSession', statusSession);
-  //       console.log('session', session);
-  //     },
-  //   ).then(async client => {
-  //     const token = await client.getSessionTokenBrowser();
-
-  //     console.log('Token', token);
-  //     this.start(client);
-  //     this.client = client;
-  //   });
-  // }
-
   async connectToClient(clientToken) {
     if (clientToken) {
       const token = await new Promise((res, rej) => {
-        create(clientToken, base64 => {
-          if (base64) {
-            console.log('BASE');
-            return res(base64);
-          }
-          console.log('Sem token');
-          return rej();
-
-          // token = { base64 };
-        });
+        create(
+          clientToken,
+          base64 => {
+            if (base64) {
+              console.log('BASE');
+              return res({ qrcode: base64 });
+            }
+            console.log('Sem token');
+            return rej();
+          },
+          (statusSession, session) => {
+            return res({ token: session, state: statusSession });
+          },
+        ).then(client => this.start(client));
       });
       return token;
     }
@@ -44,7 +25,51 @@ class Bot {
   }
 
   start(client) {
-    client.onMessage(message => {
+    client.onMessage(data => {
+      const {
+        id: messageId,
+        chatId,
+        sender,
+        isGroupMsg: isGroup,
+        content,
+        timestamp,
+        from: fromId,
+        quotedMsgObj,
+      } = data;
+
+      const {
+        id,
+        pushname: profileName,
+        name,
+        profilePicThumbObj,
+        isMyContact,
+        isMe,
+        isWAContact,
+        isEnterprise,
+        isBusiness,
+      } = sender;
+
+      const message = {
+        id,
+        profileName,
+        name,
+        avatarUrl: profilePicThumbObj.eurl,
+        messageId,
+        chatId,
+        isMyContact,
+        isGroup,
+        isMe,
+        isWAContact,
+        isEnterprise,
+        isBusiness,
+        message: {
+          content,
+          timestamp,
+          fromId,
+          quotedMsgObj,
+        },
+      };
+
       console.log('New message: ', message);
     });
   }
