@@ -1,4 +1,4 @@
-import Venom from '../venom';
+const Venom = require('../venom');
 
 class VenomController {
   stanceBot(req, res) {
@@ -15,4 +15,4 @@ class VenomController {
   }
 }
 
-export default new VenomController();
+module.exports = new VenomController();

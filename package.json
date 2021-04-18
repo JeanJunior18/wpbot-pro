@@ -4,7 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "sucrase-node src/server.js"
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": "14.16"
   },
   "dependencies": {
     "axios": "^0.21.1",

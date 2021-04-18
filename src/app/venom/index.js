@@ -1,4 +1,4 @@
-import { create } from 'venom-bot';
+const { create } = require('venom-bot');
 
 class Bot {
   async connectToClient(clientToken) {
@@ -75,4 +75,4 @@ class Bot {
   }
 }
 
-export default Bot;
+module.exports = Bot;

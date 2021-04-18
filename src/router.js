@@ -1,6 +1,5 @@
-import { Router } from 'express';
-
-import VenomController from './app/controller/venomController';
+const { Router } = require('express');
+const VenomController = require('./app/controller/venomController');
 
 const router = new Router();
 
@@ -15,4 +14,4 @@ router.post('/teste', (req, res) => {
   return res.json();
 });
 
-export default router;
+module.exports = router;

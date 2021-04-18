@@ -1,8 +1,8 @@
-import express from 'express';
-import cors from 'cors';
-import http from 'http';
+const express = require('express');
+const cors = require('cors');
+const http = require('http');
 
-import router from './router';
+const router = require('./router');
 
 class App {
   constructor() {
@@ -27,4 +27,4 @@ class App {
 
 const app = new App();
 
-export default app;
+module.exports = app;
