@@ -15,7 +15,9 @@ class Bot {
             return rej();
           },
           (statusSession, session) => {
-            return res({ token: session, state: statusSession });
+            if ((statusSession, session)) {
+              return res({ token: session, state: statusSession });
+            }
           },
         ).then(client => this.start(client));
       });
