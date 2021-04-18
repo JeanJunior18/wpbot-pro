@@ -6,12 +6,11 @@ class VenomController {
     return res.json({ bot });
   }
 
-  connectClient(req, res) {
+  async connectClient(req, res) {
     const { token } = req.body;
-    console.log(token);
     const bot = new Venom();
-    bot.connectToClient(token);
-    return res.json({});
+    const qrcode = await bot.connectToClient(token);
+    return res.json({ qrcode });
   }
 }
 
