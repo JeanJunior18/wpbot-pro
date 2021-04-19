@@ -1,4 +1,5 @@
 const { create } = require('venom-bot');
+const messageView = require('../views/message');
 
 class Bot {
   constructor() {
@@ -33,51 +34,8 @@ class Bot {
     this.client = client;
 
     client.onMessage(data => {
-      const {
-        id: messageId,
-        chatId,
-        sender,
-        isGroupMsg: isGroup,
-        content,
-        timestamp,
-        from: fromId,
-        quotedMsgObj,
-      } = data;
-
-      const {
-        id,
-        pushname: profileName,
-        name,
-        profilePicThumbObj,
-        isMyContact,
-        isMe,
-        isWAContact,
-        isEnterprise,
-        isBusiness,
-      } = sender;
-
-      const message = {
-        id,
-        profileName,
-        name,
-        avatarUrl: profilePicThumbObj.eurl,
-        messageId,
-        chatId,
-        isMyContact,
-        isGroup,
-        isMe,
-        isWAContact,
-        isEnterprise,
-        isBusiness,
-        message: {
-          content,
-          timestamp,
-          fromId,
-          quotedMsgObj,
-        },
-      };
-
-      console.log('New message: ', message);
+      messageView.render(data);
+      console.log('=============================================');
     });
   }
 }
