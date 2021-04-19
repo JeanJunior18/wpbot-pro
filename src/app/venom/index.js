@@ -1,6 +1,10 @@
 const { create } = require('venom-bot');
 
 class Bot {
+  constructor() {
+    this.client = null;
+  }
+
   async connectToClient(clientToken) {
     if (clientToken) {
       const token = await new Promise((res, rej) => {
@@ -8,25 +12,26 @@ class Bot {
           clientToken,
           base64 => {
             if (base64) {
-              console.log('BASE');
               return res({ qrcode: base64 });
             }
-            console.log('Sem token');
             return rej();
           },
           (statusSession, session) => {
             if ((statusSession, session)) {
               return res({ token: session, state: statusSession });
             }
+            return null;
           },
-        ).then(client => this.start(client));
+        ).then(client => this.start(client, clientToken));
       });
       return token;
     }
     return null;
   }
 
-  start(client) {
+  async start(client) {
+    this.client = client;
+
     client.onMessage(data => {
       const {
         id: messageId,

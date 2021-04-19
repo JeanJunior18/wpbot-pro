@@ -11,8 +11,6 @@ class App {
 
     this.middlewares();
     this.router();
-
-    console.log('Instanced Server');
   }
 
   middlewares() {

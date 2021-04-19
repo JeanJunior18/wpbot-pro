@@ -7,8 +7,9 @@ router.get('/', (req, res) => {
   res.json({ status: 'on' });
 });
 
-router.get('/bot', VenomController.stanceBot);
-router.post('/connect', VenomController.connectClient);
+router.post('/connect', VenomController.newClient);
+router.post('/send_message', VenomController.sendTextMessage);
+router.get('/check_sessions', VenomController.checkSessions);
 router.post('/teste', (req, res) => {
   console.log(req.body);
   return res.json();
