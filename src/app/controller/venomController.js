@@ -20,9 +20,9 @@ class VenomController {
     const qrcode = await bot.connectToClient(token);
 
     const interval = setInterval(() => {
-      console.log('Try get Client');
+      console.log(' Try get Client ');
       if (bot.client) {
-        console.log('Client Catch');
+        console.log(' Client Catch ');
         this.sessions[token] = bot.client;
         clearInterval(interval);
       }
