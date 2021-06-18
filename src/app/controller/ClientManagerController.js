@@ -8,6 +8,7 @@ class ClientManager {
     this.initializeClients();
 
     this.getClientStatus = this.getClientStatus.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
   }
 
   initializeClients() {
@@ -28,9 +29,20 @@ class ClientManager {
     }
   }
 
-  sendMessage(req, res, next) {
+  async sendMessage(req, res, next) {
     try {
-      return res.json({ message: 'Try send Message' });
+      const { token, number } = req.body;
+      if (token && !this.sessions[token])
+        return res.status(410).json({ error: 'Token is not avaliable' });
+
+      if (!number)
+        return res.status(410).json({ error: 'Phone number is not provided' });
+
+      req.body.number = `${number}@c.us`;
+
+      await this.sessions[token].sendMessageToClient(req.body);
+
+      return res.json({ message: 'Sending Message' });
     } catch (err) {
       return next(err);
     }

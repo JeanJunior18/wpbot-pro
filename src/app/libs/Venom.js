@@ -49,16 +49,21 @@ class VenomClient {
     });
   }
 
-  async sendMessageToClient(data) {
+  sendMessageToClient(data) {
+    if (this.clientData.connectionStatus !== 'chatsAvailable')
+      throw new Error('Client not started');
+
     const { number, type, message, url, filename, caption } = data;
 
     if (type === 'conversation') {
       console.log('Send Text Message');
-      await this.client.sendText(`${number}@c.us`, message);
-    } else {
-      console.log('Send Media Message');
-      await this.client.sendFile(`${number}@c.us`, url, filename, caption);
+      return this.client.sendText(number, message);
     }
+    if (type === 'audioMessage') {
+      console.log('Send Voice Message');
+      return this.client.sendVoice(number, url);
+    }
+    return this.client.sendFile(number, url, filename, caption);
   }
 
   sendMessageToWebHook() {
