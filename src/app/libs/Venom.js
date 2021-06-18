@@ -28,7 +28,11 @@ class VenomClient {
         console.log('\n Status Log', status, '\n');
         this.clientData.connectionStatus = status;
       },
-      { logQR: false },
+      {
+        logQR: false,
+        disableSpins: true,
+        disableWelcome: true,
+      },
     )
       .then(client => this.start(client))
       .catch(err => {
@@ -41,8 +45,11 @@ class VenomClient {
       });
   }
 
-  start(client) {
+  async start(client) {
     this.client = client;
+
+    const sessionInfo = await client.getSessionTokenBrowser();
+    console.log(sessionInfo);
 
     client.onMessage(data => {
       this.sendMessageToWebHook(data);
