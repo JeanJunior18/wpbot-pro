@@ -13,6 +13,11 @@ class ClientManager {
       this.sessions[token] = new Client(token);
     });
   }
+
+  getClientData(token) {
+    const session = this.sessions[token];
+    return session?.clientData;
+  }
 }
 
 module.exports = new ClientManager();
