@@ -12,6 +12,7 @@ class ClientManager {
     this.sendMessage = this.sendMessage.bind(this);
     this.createToken = this.createToken.bind(this);
     this.deleteToken = this.deleteToken.bind(this);
+    this.updateToken = this.updateToken.bind(this);
   }
 
   initializeClients() {
@@ -86,17 +87,38 @@ class ClientManager {
   async deleteToken(req, res, next) {
     try {
       const { token } = req.params;
+      const session = this.sessions[token];
 
-      if (token && !this.sessions[token])
+      if (token && !session)
         return res.status(410).json({ error: 'Token is not avaliable' });
-      if (!this.sessions[token].clientSession)
+      if (!session.clientSession)
         return res.status(428).json({ error: 'Token has not active session' });
 
-      await this.sessions[token].clientSession.logout();
+      await session.clientSession.logout();
 
       await this.database.ref(`tokens/${token}`).remove();
 
       return res.json({ message: `Token ${token} deleted` });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async updateToken(req, res, next) {
+    try {
+      const { token } = req.params;
+      const { organization, host, webhook, sessionInfo } = req.body;
+
+      const data = {};
+
+      if (organization) data.organization = organization;
+      if (host) data.host = host;
+      if (webhook) data.webhook = webhook;
+      if (sessionInfo) data.sessionInfo = sessionInfo;
+
+      await this.database.ref(`tokens/${token}`).update(data);
+
+      return res.json({ message: `Token ${token} updated` });
     } catch (err) {
       return next(err);
     }

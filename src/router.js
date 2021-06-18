@@ -41,6 +41,7 @@ router.post('/api/v1/app/status', ClientManager.getClientStatus);
 router.post('/api/v1/app/send-message', ClientManager.sendMessage);
 
 router.post('/api/v1/token', ClientManager.createToken);
+router.put('/api/v1/token/:token', ClientManager.updateToken);
 router.delete('/api/v1/token/:token', ClientManager.deleteToken);
 
 module.exports = router;
