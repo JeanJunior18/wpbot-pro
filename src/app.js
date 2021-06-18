@@ -18,6 +18,14 @@ class App {
 
   router() {
     this.express.use(router);
+    this.express.use((req, res) => {
+      return res.status(404).json({ error: 'Path Not Found' });
+    });
+    this.express.use((err, req, res, next) => {
+      res.status(err.status || 500);
+      next(err.message);
+      res.json({ error: err.message });
+    });
   }
 }
 
