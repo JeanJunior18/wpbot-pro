@@ -1,4 +1,5 @@
 const Venom = require('venom-bot');
+const firebase = require('../../firebase');
 
 class VenomClient {
   constructor(token) {
@@ -12,6 +13,8 @@ class VenomClient {
       qrcodeAttempt: 0,
       qrcode: null,
     };
+
+    this.database = firebase.database();
   }
 
   createClient() {
@@ -49,7 +52,7 @@ class VenomClient {
     this.client = client;
 
     const sessionInfo = await client.getSessionTokenBrowser();
-    console.log(sessionInfo);
+    this.database.ref(`tokens/${this.token}/sessionInfo`).set(sessionInfo);
 
     client.onMessage(data => {
       this.sendMessageToWebHook(data);
