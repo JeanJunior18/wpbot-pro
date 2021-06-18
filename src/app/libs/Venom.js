@@ -44,8 +44,8 @@ class VenomClient {
   start(client) {
     this.client = client;
 
-    client.onMessage(() => {
-      console.log('Send Message to Server');
+    client.onMessage(data => {
+      this.sendMessageToWebHook(data);
     });
   }
 
@@ -66,8 +66,10 @@ class VenomClient {
     return this.client.sendFile(number, url, filename, caption);
   }
 
-  sendMessageToWebHook() {
+  sendMessageToWebHook(data) {
     console.log('Send Message to Webhook');
+
+    return data;
   }
 }
 
