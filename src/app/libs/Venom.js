@@ -2,11 +2,10 @@ const Venom = require('venom-bot');
 const firebase = require('../../firebase');
 
 class VenomClient {
-  constructor(token) {
-    this.createClient();
-
+  constructor(token, clientInfo) {
     this.token = token;
-    this.client = {};
+    this.clientSession = null;
+    this.clientInfo = clientInfo;
     this.clientData = {
       token,
       connectionStatus: 'starting',
@@ -15,13 +14,15 @@ class VenomClient {
     };
 
     this.database = firebase.database();
+
+    this.createClient(token);
   }
 
-  createClient() {
-    console.log('Create a Client for ', this.token);
+  createClient(token) {
+    console.log('Create a Client for ', token);
 
     Venom.create(
-      this.token,
+      token,
       (base64Qr, asciiQR, attempt) => {
         console.log('\n Update QRCode \n');
         this.clientData.qrcode = base64Qr;
@@ -36,6 +37,7 @@ class VenomClient {
         disableSpins: true,
         disableWelcome: true,
       },
+      this.clientInfo?.sessionInfo || {},
     )
       .then(client => this.start(client))
       .catch(err => {
@@ -49,13 +51,22 @@ class VenomClient {
   }
 
   async start(client) {
-    this.client = client;
+    console.log('===>', this.token, 'Started');
+    this.clientSession = client;
 
     const sessionInfo = await client.getSessionTokenBrowser();
     this.database.ref(`tokens/${this.token}/sessionInfo`).set(sessionInfo);
 
     client.onMessage(data => {
       this.sendMessageToWebHook(data);
+    });
+
+    client.onStateChange(state => {
+      console.log('State Udpate', state);
+
+      if (state === 'CONFLICT') {
+        client.useHere();
+      }
     });
   }
 
@@ -67,13 +78,13 @@ class VenomClient {
 
     if (type === 'conversation') {
       console.log('Send Text Message');
-      return this.client.sendText(number, message);
+      return this.clientSession.sendText(number, message);
     }
     if (type === 'audioMessage') {
       console.log('Send Voice Message');
-      return this.client.sendVoice(number, url);
+      return this.clientSession.sendVoice(number, url);
     }
-    return this.client.sendFile(number, url, filename, caption);
+    return this.clientSession.sendFile(number, url, filename, caption);
   }
 
   sendMessageToWebHook(data) {

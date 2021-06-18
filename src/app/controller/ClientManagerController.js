@@ -1,29 +1,47 @@
 const VenomClient = require('../libs/Venom');
+const firebase = require('../../firebase');
 
 class ClientManager {
   constructor() {
     console.log('Verify active tokens to connect');
     this.sessions = {};
-    this.tokens = ['jeanjr'];
+    this.database = firebase.database();
     this.initializeClients();
 
     this.getClientStatus = this.getClientStatus.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
+    this.createToken = this.createToken.bind(this);
+    this.deleteToken = this.deleteToken.bind(this);
   }
 
   initializeClients() {
-    this.tokens.forEach(token => {
-      this.sessions[token] = new VenomClient(token);
+    const tokenRef = this.database.ref('tokens');
+
+    tokenRef.once('value', snapshot => {
+      if (!snapshot.val()) return;
+      const token = Object.keys(snapshot.val())[0];
+      const value = snapshot.val()[token];
+
+      this.sessions[token] = new VenomClient(token, value);
     });
   }
 
-  getClientStatus(req, res, next) {
-    const token = req.params.token || req.body.token;
-
+  async getClientStatus(req, res, next) {
     try {
+      const token = req.params.token || req.body.token;
       const session = this.sessions[token];
 
-      return res.json(session?.clientData);
+      if (!session)
+        return res.status(410).json({ error: 'Session is not avaliable' });
+
+      if (!session.clientSession) this.sessions[token] = new VenomClient(token);
+
+      const payload = {
+        token: session.token,
+        ...session.clientData,
+      };
+
+      return res.json(payload);
     } catch (err) {
       return next(err);
     }
@@ -43,6 +61,42 @@ class ClientManager {
       await this.sessions[token].sendMessageToClient(req.body);
 
       return res.json({ message: 'Sending Message' });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async createToken(req, res, next) {
+    try {
+      const { organization, webhook, token, host } = req.body;
+
+      await this.database
+        .ref(`tokens/${token}`)
+        .set({ organization, webhook, host });
+
+      this.sessions[token] = new VenomClient(token);
+      return res.json({
+        message: `Token from ${organization} created - ${token}`,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async deleteToken(req, res, next) {
+    try {
+      const { token } = req.params;
+
+      if (token && !this.sessions[token])
+        return res.status(410).json({ error: 'Token is not avaliable' });
+      if (!this.sessions[token].clientSession)
+        return res.status(428).json({ error: 'Token has not active session' });
+
+      await this.sessions[token].clientSession.logout();
+
+      await this.database.ref(`tokens/${token}`).remove();
+
+      return res.json({ message: `Token ${token} deleted` });
     } catch (err) {
       return next(err);
     }
