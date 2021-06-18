@@ -1,8 +1,8 @@
 const Venom = require('venom-bot');
 
-class VenomController {
+class VenomClient {
   constructor(token) {
-    console.log('Instance Venom Class', token);
+    this.createClient();
 
     this.token = token;
     this.client = {};
@@ -49,8 +49,16 @@ class VenomController {
     });
   }
 
-  sendMessageToClient() {
-    console.log('Send Message to Client');
+  async sendMessageToClient(data) {
+    const { number, type, message, url, filename, caption } = data;
+
+    if (type === 'conversation') {
+      console.log('Send Text Message');
+      await this.client.sendText(`${number}@c.us`, message);
+    } else {
+      console.log('Send Media Message');
+      await this.client.sendFile(`${number}@c.us`, url, filename, caption);
+    }
   }
 
   sendMessageToWebHook() {
@@ -58,4 +66,4 @@ class VenomController {
   }
 }
 
-module.exports = VenomController;
+module.exports = VenomClient;
