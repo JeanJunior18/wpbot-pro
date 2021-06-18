@@ -1,28 +1,24 @@
 const express = require('express');
 const cors = require('cors');
-const http = require('http');
 
 const router = require('./router');
 
 class App {
   constructor() {
-    this.app = express();
-    this.server = http.Server(this.app);
+    this.express = express();
 
     this.middlewares();
     this.router();
   }
 
   middlewares() {
-    this.app.use(cors());
-    this.app.use(express.json());
+    this.express.use(cors());
+    this.express.use(express.json());
   }
 
   router() {
-    this.app.use(router);
+    this.express.use(router);
   }
 }
 
-const app = new App();
-
-module.exports = app;
+module.exports = new App().express;

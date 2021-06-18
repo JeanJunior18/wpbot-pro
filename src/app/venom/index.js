@@ -18,7 +18,7 @@ class Bot {
             return rej();
           },
           (statusSession, session) => {
-            if ((statusSession, session)) {
+            if (statusSession && session && statusSession !== 'notLogged') {
               return res({ token: session, state: statusSession });
             }
             return null;

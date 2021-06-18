@@ -1,18 +1,10 @@
-const { Router } = require('express');
-const VenomController = require('./app/controller/venomController');
-
-const router = new Router();
+const router = require('express').Router();
+const ClientManager = require('./app/controller/ClientManagerController');
 
 router.get('/', (req, res) => {
-  res.json({ status: 'on' });
-});
-
-router.post('/connect', VenomController.newClient);
-router.post('/send_message', VenomController.sendTextMessage);
-router.get('/check_sessions', VenomController.checkSessions);
-router.post('/teste', (req, res) => {
-  console.log(req.body);
-  return res.json();
+  const { sessions } = ClientManager;
+  console.log(sessions);
+  res.json(sessions);
 });
 
 module.exports = router;
