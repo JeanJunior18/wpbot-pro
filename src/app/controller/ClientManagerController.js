@@ -13,6 +13,7 @@ class ClientManager {
     this.createToken = this.createToken.bind(this);
     this.deleteToken = this.deleteToken.bind(this);
     this.updateToken = this.updateToken.bind(this);
+    this.restartAndLogout = this.restartAndLogout.bind(this);
   }
 
   initializeClients() {
@@ -35,7 +36,8 @@ class ClientManager {
       if (!session)
         return res.status(410).json({ error: 'Session is not avaliable' });
 
-      if (!session.clientSession) this.sessions[token] = new VenomClient(token);
+      if (!session.clientSession && session.clientData !== 'starting')
+        this.sessions[token] = new VenomClient(token);
 
       const payload = {
         token: session.token,
@@ -43,6 +45,29 @@ class ClientManager {
       };
 
       return res.json(payload);
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async restartAndLogout(req, res, next) {
+    try {
+      const { token, command } = req.body;
+      const session = this.sessions[token];
+
+      if (token && !session)
+        return res.status(410).json({ error: 'Token is not avaliable' });
+      if (!session.clientSession)
+        return res.status(428).json({ error: 'Token has not active session' });
+
+      if (command === 'logout') {
+        await session.clientSession.logout();
+      } else if (command === 'start') {
+        await session.clientSession.restartService();
+      } else {
+        return res.status(418).json({ error: 'Invalid Command' });
+      }
+      return res.json(`Command ${command} success`);
     } catch (err) {
       return next(err);
     }
@@ -108,6 +133,11 @@ class ClientManager {
     try {
       const { token } = req.params;
       const { organization, host, webhook, sessionInfo } = req.body;
+
+      const session = this.sessions[token];
+
+      if (token && !session)
+        return res.status(410).json({ error: 'Token is not avaliable' });
 
       const data = {};
 
