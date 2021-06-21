@@ -36,8 +36,19 @@ class ClientManager {
       if (!session)
         return res.status(410).json({ error: 'Session is not avaliable' });
 
-      if (!session.clientSession && session.clientData !== 'starting')
-        this.sessions[token] = new VenomClient(token);
+      if (session.clientSession) {
+        const connectionState = await session.clientSession.getConnectionState();
+        let qr = null;
+        if (connectionState !== 'CONNECTED') {
+          qr = await session.clientSession.getQrCode();
+        }
+
+        if (qr) {
+          session.clientData.qrcode = qr.base64Image;
+        } else {
+          session.clientData.qrcode = null;
+        }
+      }
 
       const payload = {
         token: session.token,
@@ -116,11 +127,11 @@ class ClientManager {
 
       if (token && !session)
         return res.status(410).json({ error: 'Token is not avaliable' });
-      if (!session.clientSession)
-        return res.status(428).json({ error: 'Token has not active session' });
 
-      await session.clientSession.logout();
-
+      if (session.clientSession) {
+        await session.clientSession.logout();
+        await session.clientSession.close();
+      }
       await this.database.ref(`tokens/${token}`).remove();
 
       return res.json({ message: `Token ${token} deleted` });

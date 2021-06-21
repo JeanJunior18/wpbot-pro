@@ -36,12 +36,13 @@ class VenomClient {
         logQR: false,
         disableSpins: true,
         disableWelcome: true,
+        waitForLogin: false,
       },
       this.clientInfo?.sessionInfo || {},
     )
       .then(client => this.start(client))
       .catch(err => {
-        console.log('Error on connect', err.message);
+        console.log('Error on connect', err);
         this.clientData = {
           ...this.clientData,
           connectionStatus: 'disconnected',
