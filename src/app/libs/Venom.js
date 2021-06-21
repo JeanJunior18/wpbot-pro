@@ -8,7 +8,7 @@ class VenomClient {
     this.clientInfo = clientInfo;
     this.clientData = {
       token,
-      connectionStatus: 'starting',
+      sessionStatus: 'starting',
       qrcodeAttempt: 0,
       qrcode: null,
     };
@@ -30,7 +30,7 @@ class VenomClient {
       },
       status => {
         console.log('\n Status Log', status, '\n');
-        this.clientData.connectionStatus = status;
+        this.clientData.sessionStatus = status;
       },
       {
         logQR: false,
@@ -45,7 +45,7 @@ class VenomClient {
         console.log('Error on connect', err);
         this.clientData = {
           ...this.clientData,
-          connectionStatus: 'disconnected',
+          sessionStatus: 'disconnected',
           qrcode: null,
         };
       });
@@ -56,23 +56,36 @@ class VenomClient {
     this.clientSession = client;
 
     const sessionInfo = await client.getSessionTokenBrowser();
+    this.clientData.connectionState = await client.getConnectionState();
+
     this.database.ref(`tokens/${this.token}/sessionInfo`).set(sessionInfo);
 
     client.onMessage(data => {
       this.sendMessageToWebHook(data);
     });
 
-    client.onStateChange(state => {
+    client.onStateChange(async state => {
       console.log('State Udpate', state);
 
       if (state === 'CONFLICT') {
         client.useHere();
       }
+
+      if (state === 'CONNECTED') {
+        const updateSessionInfo = await client.getSessionTokenBrowser();
+        this.database
+          .ref(`tokens/${this.token}/sessionInfo`)
+          .set(updateSessionInfo);
+      }
+
+      if (state === 'UNPAIRED') {
+        this.database.ref(`tokens/${this.token}/sessionInfo`).remove();
+      }
     });
   }
 
   sendMessageToClient(data) {
-    if (this.clientData.connectionStatus !== 'chatsAvailable')
+    if (this.clientData.sessionStatus !== 'chatsAvailable')
       throw new Error('Client not started');
 
     const { number, type, message, url, filename, caption } = data;
