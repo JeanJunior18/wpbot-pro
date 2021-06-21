@@ -40,6 +40,7 @@ router.get('/client/:token', ClientManager.getClientStatus);
 router.post('/api/v1/app/status', ClientManager.getClientStatus);
 router.post('/api/v1/app/send-message', ClientManager.sendMessage);
 router.post('/api/v1/app/start', ClientManager.restartAndLogout);
+router.post('/api/v1/app/validate-phone', ClientManager.validateNumber);
 
 router.post('/api/v1/token', ClientManager.createToken);
 router.put('/api/v1/token/:token', ClientManager.updateToken);

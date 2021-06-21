@@ -14,6 +14,7 @@ class ClientManager {
     this.deleteToken = this.deleteToken.bind(this);
     this.updateToken = this.updateToken.bind(this);
     this.restartAndLogout = this.restartAndLogout.bind(this);
+    this.validateNumber = this.validateNumber.bind(this);
   }
 
   initializeClients() {
@@ -160,6 +161,30 @@ class ClientManager {
       await this.database.ref(`tokens/${token}`).update(data);
 
       return res.json({ message: `Token ${token} updated` });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async validateNumber(req, res, next) {
+    try {
+      const { token, value } = req.body;
+
+      const session = this.sessions[token];
+
+      if (token && !session)
+        return res.status(410).json({ error: 'Token is not avaliable' });
+
+      const records = [];
+
+      for (const number of value) {
+        const { numberExists } = await session.clientSession.checkNumberStatus(
+          `${number}@c.us`,
+        );
+        records.push({ number, exist: numberExists || false });
+      }
+
+      return res.json({ records });
     } catch (err) {
       return next(err);
     }
