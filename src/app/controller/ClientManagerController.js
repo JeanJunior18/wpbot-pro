@@ -1,3 +1,4 @@
+const { default: axios } = require('axios');
 const VenomClient = require('../libs/Venom');
 const firebase = require('../../firebase');
 
@@ -87,7 +88,8 @@ class ClientManager {
 
   async sendMessage(req, res, next) {
     try {
-      const { token, number } = req.body;
+      const { token, number, chat_id: chatID } = req.body;
+
       if (token && !this.sessions[token])
         return res.status(410).json({ error: 'Token is not avaliable' });
 
@@ -95,8 +97,34 @@ class ClientManager {
         return res.status(410).json({ error: 'Phone number is not provided' });
 
       req.body.number = `${number}@c.us`;
+      const webhookURL = `${this.sessions[token].clientInfo.webhook}token=${token}`;
 
-      await this.sessions[token].sendMessageToClient(req.body);
+      this.sessions[token]
+        .sendMessageToClient(req.body)
+        .then(msgResponse => {
+          axios
+            .post(webhookURL, {
+              cmd: 'ack',
+              chat_id: chatID,
+              ack: 2,
+              message: msgResponse,
+            })
+            .catch(err => {
+              console.log('Error on send DELIVERED ACK - ', err.message);
+            });
+        })
+        .catch(err => {
+          console.log(err.message);
+          axios
+            .post(webhookURL, {
+              cmd: 'ack',
+              chat_id: chatID,
+              ack: 0,
+            })
+            .catch(e => {
+              console.log('Error on send ERROR ACK - ', e.message);
+            });
+        });
 
       return res.json({ message: 'Sending Message' });
     } catch (err) {
