@@ -14,6 +14,7 @@ class VenomClient {
       sessionStatus: 'starting',
       qrcodeAttempt: 0,
       qrcode: null,
+      browserStarted: false,
     };
 
     this.database = firebase.database();
@@ -59,7 +60,7 @@ class VenomClient {
   async start(client) {
     console.log('===>', this.token, 'Started');
     this.clientSession = client;
-
+    this.clientData.browserStarted = true;
     const sessionInfo = await client.getSessionTokenBrowser();
     this.clientData.connectionState = await client.getConnectionState();
 
@@ -90,8 +91,7 @@ class VenomClient {
   }
 
   async sendMessageToClient(data) {
-    if (this.clientData.sessionStatus !== 'chatsAvailable')
-      throw new Error('Client not started');
+    if (!this.clientData.browserStarted) throw new Error('Client not started');
 
     const { number, type, message, url, filename, caption } = data;
 
@@ -100,7 +100,7 @@ class VenomClient {
       return this.clientSession.sendText(number, message);
     }
     if (type === 'audioMessage') {
-      const res = await axios
+      const base64Audio = await axios
         .get(url, { responseType: 'arraybuffer' })
         .then(
           response =>
@@ -110,7 +110,7 @@ class VenomClient {
             ).toString('base64')}`,
         );
 
-      return this.clientSession.sendVoiceBase64(number, res);
+      return this.clientSession.sendVoiceBase64(number, base64Audio);
     }
     return this.clientSession.sendFile(number, url, filename, caption);
   }
