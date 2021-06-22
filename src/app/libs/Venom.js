@@ -1,4 +1,7 @@
+const https = require('https');
+const fs = require('fs');
 const Venom = require('venom-bot');
+const { default: axios } = require('axios');
 const firebase = require('../../firebase');
 
 class VenomClient {
@@ -86,7 +89,7 @@ class VenomClient {
     });
   }
 
-  sendMessageToClient(data) {
+  async sendMessageToClient(data) {
     if (this.clientData.sessionStatus !== 'chatsAvailable')
       throw new Error('Client not started');
 
@@ -97,13 +100,26 @@ class VenomClient {
       return this.clientSession.sendText(number, message);
     }
     if (type === 'audioMessage') {
-      console.log('Send Voice Message');
-      return this.clientSession.sendVoice(number, url);
+      const res = await axios
+        .get(url, { responseType: 'arraybuffer' })
+        .then(
+          response =>
+            `data:audio/mpeg;base64,${Buffer.from(
+              response.data,
+              'binary',
+            ).toString('base64')}`,
+        );
+
+      return this.clientSession.sendVoiceBase64(number, res);
     }
     return this.clientSession.sendFile(number, url, filename, caption);
   }
 
   sendMessageToWebHook(data) {
+    if (data.isGroupMsg) {
+      console.log('Ignore group message');
+      return data;
+    }
     console.log('Send Message to Webhook');
 
     return data;
