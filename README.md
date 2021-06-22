@@ -1,3 +1,5 @@
+# WPBOT-PRO
+
 > It's a Whatsapp API to integrate services like a chat-bot for example
 
 **To Run**
@@ -33,10 +35,10 @@ docker-compose up --build -d
 
 ## Features Client ⇒ Web Hook Bluml
 
-- [ ]  Receive Text Message
-- [ ]  Receive Audio
-- [ ]  Receive Image
-- [ ]  Receive Video
-- [ ]  Receive Files
-- [ ]  Receive Location
-- [ ]  Receive Contacts
+- [x]  Receive Text Message
+- [x]  Receive Audio
+- [x]  Receive Image
+- [x]  Receive Video
+- [x]  Receive Files
+- [x]  Receive Location
+- [x]  Receive Contacts
