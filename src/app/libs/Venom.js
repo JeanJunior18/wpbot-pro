@@ -62,6 +62,7 @@ class VenomClient {
     console.log('===>', this.token, 'Started');
     this.clientSession = client;
     this.clientData.browserStarted = true;
+    this.clientData.isPhoneConnected = true;
     const sessionInfo = await client.getSessionTokenBrowser();
     this.clientData.connectionState = await client.getConnectionState();
 
