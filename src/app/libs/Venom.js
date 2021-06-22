@@ -76,6 +76,7 @@ class VenomClient {
         axios
           .post(this.webhookURL, {
             ...ackData,
+            cmd: 'ack',
             engine: 'venom',
           })
           .catch(err =>
