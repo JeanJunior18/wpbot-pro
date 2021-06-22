@@ -4,5 +4,6 @@ services:
   app:
     build: .
     command: pm2-runtime src/server.js
+    container_name: wpbot-pro
     ports:
       - "3333:3333"

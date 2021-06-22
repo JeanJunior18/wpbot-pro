@@ -116,13 +116,22 @@ class VenomClient {
   }
 
   sendMessageToWebHook(data) {
-    if (data.isGroupMsg) {
-      console.log('Ignore group message');
-      return data;
-    }
-    console.log('Send Message to Webhook');
+    if (!data.isGroupMsg) {
+      const webhookURL = `${this.clientInfo.webhook}?token=${this.token}`;
+      console.log('Send Message to Webhook', webhookURL);
 
-    return data;
+      axios
+        .post(webhookURL, {
+          ...data,
+          engine: 'venom',
+        })
+        .then(res => {
+          console.log(res.data);
+        })
+        .catch(err => {
+          console.log(err.message);
+        });
+    }
   }
 }
 
