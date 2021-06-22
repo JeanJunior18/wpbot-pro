@@ -107,6 +107,7 @@ class ClientManager {
               cmd: 'ack',
               chat_id: chatID,
               ack: 2,
+              engine: 'venom',
               message: msgResponse,
             })
             .catch(err => {
@@ -120,6 +121,7 @@ class ClientManager {
               cmd: 'ack',
               chat_id: chatID,
               ack: 0,
+              engine: 'venom',
             })
             .catch(e => {
               console.log('Error on send ERROR ACK - ', e.message);

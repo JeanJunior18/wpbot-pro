@@ -1,5 +1,3 @@
-const https = require('https');
-const fs = require('fs');
 const Venom = require('venom-bot');
 const { default: axios } = require('axios');
 const firebase = require('../../firebase');
@@ -16,6 +14,8 @@ class VenomClient {
       qrcode: null,
       browserStarted: false,
     };
+
+    this.webhookURL = `${this.clientInfo.webhook}?token=${this.token}`;
 
     this.database = firebase.database();
 
@@ -70,6 +70,20 @@ class VenomClient {
       this.sendMessageToWebHook(data);
     });
 
+    client.onAck(ackData => {
+      console.log('ACK UPDATE');
+      if (ackData.ack === 3) {
+        axios
+          .post(this.webhookURL, {
+            ...ackData,
+            engine: 'venom',
+          })
+          .catch(err =>
+            console.log('Error on send ACK UPDATE - ', err.message),
+          );
+      }
+    });
+
     client.onStateChange(async state => {
       console.log('State Udpate', state);
 
@@ -117,11 +131,10 @@ class VenomClient {
 
   sendMessageToWebHook(data) {
     if (!data.isGroupMsg) {
-      const webhookURL = `${this.clientInfo.webhook}?token=${this.token}`;
-      console.log('Send Message to Webhook', webhookURL);
+      console.log('Send Message to Webhook', this.webhookURL);
 
       axios
-        .post(webhookURL, {
+        .post(this.webhookURL, {
           ...data,
           engine: 'venom',
         })
