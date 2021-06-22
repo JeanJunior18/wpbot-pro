@@ -1,16 +1,16 @@
-### WPBOT PRO
-
+> It's a Whatsapp API to integrate services like a chat-bot for example
 
 **To Run**
+
 1. Create a .env file with firebase credentials
 
 2. Install Docker and Docker Compose
 
-3. Run
-```
+3. Run 
+
+```bash
 docker-compose up --build -d
 ```
-## It's a Whatsapp API to integrate services like a chat-bot for example
 
 ## Features API
 
@@ -26,7 +26,7 @@ docker-compose up --build -d
 ## Features API ⇒ Client
 
 - [x]  Send Text Message
-- [ ]  Send Audio
+- [x]  Send Audio
 - [x]  Send Image
 - [x]  Send Video
 - [x]  Send Files
