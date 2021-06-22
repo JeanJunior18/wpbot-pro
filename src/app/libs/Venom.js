@@ -13,6 +13,7 @@ class VenomClient {
       qrcodeAttempt: 0,
       qrcode: null,
       browserStarted: false,
+      isPhoneConnected: false,
     };
 
     this.webhookURL = `${this.clientInfo.webhook}?token=${this.token}`;
@@ -87,20 +88,20 @@ class VenomClient {
 
     client.onStateChange(async state => {
       console.log('State Udpate', state);
+      this.clientData.connectionState = state;
 
       if (state === 'CONFLICT') {
         client.useHere();
-      }
-
-      if (state === 'CONNECTED') {
+      } else if (state === 'CONNECTED') {
         const updateSessionInfo = await client.getSessionTokenBrowser();
         this.database
           .ref(`tokens/${this.token}/sessionInfo`)
           .set(updateSessionInfo);
-      }
-
-      if (state === 'UNPAIRED') {
+      } else if (state === 'UNPAIRED') {
+        this.clientData.isPhoneConnected = false;
         this.database.ref(`tokens/${this.token}/sessionInfo`).remove();
+      } else {
+        this.clientData.isPhoneConnected = false;
       }
     });
   }

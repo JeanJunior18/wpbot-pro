@@ -40,6 +40,8 @@ class ClientManager {
 
       if (session.clientSession) {
         const connectionState = await session.clientSession.getConnectionState();
+        session.clientData.connectionState = await session.clientSession.isConnected();
+
         let qr = null;
         if (connectionState !== 'CONNECTED') {
           qr = await session.clientSession.getQrCode();
