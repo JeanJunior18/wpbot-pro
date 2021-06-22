@@ -59,7 +59,10 @@ class ClientManager {
         ...session.clientData,
       };
 
-      return res.json(payload);
+      return res.json({
+        status: payload,
+        qrCodeUrl: session.clientData.qrcode,
+      });
     } catch (err) {
       return next(err);
     }
