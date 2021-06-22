@@ -97,7 +97,7 @@ class ClientManager {
         return res.status(410).json({ error: 'Phone number is not provided' });
 
       req.body.number = `${number}@c.us`;
-      const webhookURL = `${this.sessions[token].clientInfo.webhook}token=${token}`;
+      const webhookURL = `${this.sessions[token].clientInfo.webhook}?token=${token}`;
 
       this.sessions[token]
         .sendMessageToClient(req.body)
