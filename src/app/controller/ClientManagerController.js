@@ -23,10 +23,12 @@ class ClientManager {
 
     tokenRef.once('value', snapshot => {
       if (!snapshot.val()) return;
-      const token = Object.keys(snapshot.val())[0];
-      const value = snapshot.val()[token];
+      const tokenList = snapshot.val();
 
-      this.sessions[token] = new VenomClient(token, value);
+      for (const token in tokenList) {
+        console.log(token);
+        this.sessions[token] = new VenomClient(token, tokenList[token]);
+      }
     });
   }
 
@@ -226,4 +228,6 @@ class ClientManager {
   }
 }
 
-module.exports = new ClientManager();
+const clientManager = new ClientManager();
+
+module.exports = { clientManager, sessions: clientManager.sessions };
