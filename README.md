@@ -19,8 +19,12 @@ docker-compose up --build -d
 - [x]  Token to client management
     - [x]  Create Token
     - [x]  Update Token
-        - [ ]  Update client info on update token
+    - [ ]  Update client info on update
     - [x]  Delete Token
+        - [ ]  Close a browser on delete
+        - [ ]  Update sessions on delete
+        - [ ]  Destroy object on delete
+    - [x]  Initialize Token
     - [x]  Initialize Token
 - [x]  Get QrCode
 - [x]  Get Token connection status

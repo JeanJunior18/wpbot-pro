@@ -1,49 +1,21 @@
 const router = require('express').Router();
-const ClientManager = require('./app/controller/ClientManagerController');
+const { clientManager } = require('./app/controller/ClientManagerController');
+const sessionController = require('./app/controller/SessionController');
+const hasActiveSession = require('./app/middlewares/hasActiveSession');
+const hasToken = require('./app/middlewares/hasToken');
 
-/** Messages
- * -
- * Send  message /api/v1/app/send-message||301
- * - token
- * - type
- * - number
- * - chat_id
- * ====== Text
- * - message
- * ====== File
- * - url
- * - filename
- * - caption
- * - mimetype
- */
+router.get('/sessions', sessionController.sessions);
+router.get('/client/:token', clientManager.getClientStatus);
 
-/** Token
- * POST status /api/v1/app/status
- * PUT /token/:token
- * DELETE /token/:token
- * POST /token
- */
+router.post('/api/v1/token', hasToken, clientManager.createToken);
+router.put('/api/v1/token/:token', clientManager.updateToken);
+router.delete('/api/v1/token/:token', clientManager.deleteToken);
 
-/** User
- * POST /user
- * POST /login
- */
-
-router.get('/sessions', (req, res) => {
-  const { sessions } = ClientManager;
-
-  return res.json(sessions);
-});
-
-router.get('/client/:token', ClientManager.getClientStatus);
-
-router.post('/api/v1/app/status', ClientManager.getClientStatus);
-router.post('/api/v1/app/send-message', ClientManager.sendMessage);
-router.post('/api/v1/app/start', ClientManager.restartAndLogout);
-router.post('/api/v1/app/validate-phone', ClientManager.validateNumber);
-
-router.post('/api/v1/token', ClientManager.createToken);
-router.put('/api/v1/token/:token', ClientManager.updateToken);
-router.delete('/api/v1/token/:token', ClientManager.deleteToken);
+// Middleware to Check Active Session
+router.use(hasActiveSession);
+router.post('/api/v1/app/status', clientManager.getClientStatus);
+router.post('/api/v1/app/send-message', clientManager.sendMessage);
+router.post('/api/v1/app/start', clientManager.restartAndLogout);
+router.post('/api/v1/app/validate-phone', clientManager.validateNumber);
 
 module.exports = router;
