@@ -30,6 +30,7 @@ docker-compose up --build -d
 - [x]  Get Token connection status
 - [x]  Validade Whatsapp number
 - [x]  Config debugger
+- [ ]  Restart client
 - [ ]  Create validation middlewares
 - [ ]  Automatic deployment
 - [ ]  Able multiple engine
