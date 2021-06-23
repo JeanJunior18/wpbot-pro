@@ -18,4 +18,6 @@ router.post('/api/v1/app/send-message', clientManager.sendMessage);
 router.post('/api/v1/app/start', clientManager.restartAndLogout);
 router.post('/api/v1/app/validate-phone', clientManager.validateNumber);
 
+router.post('/api/v1/app/close-session/', sessionController.closeSession);
+
 module.exports = router;

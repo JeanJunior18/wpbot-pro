@@ -39,7 +39,7 @@ class ClientManager {
       if (!session)
         return res.status(410).json({ error: 'Session is not avaliable' });
 
-      if (session.clientSession) {
+      if (!session.clientSession.page._closed) {
         const connectionState = await session.clientSession.getConnectionState();
         session.clientData.connectionState = await session.clientSession.isConnected();
 
@@ -53,6 +53,9 @@ class ClientManager {
         } else {
           session.clientData.qrcode = null;
         }
+      } else {
+        session.clientData.connectionState = 'browserClosed';
+        session.clientData.isPhoneConnected = false;
       }
 
       const payload = {
@@ -64,6 +67,7 @@ class ClientManager {
         status: {
           ...payload,
           qrCodeUrl: session.clientData.qrcode,
+          myNumber: session.clientData.isPhoneConnected,
         },
       });
     } catch (err) {

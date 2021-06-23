@@ -23,4 +23,18 @@ module.exports = {
       return next(err);
     }
   },
+
+  async closeSession(req, res, next) {
+    try {
+      const { token } = req.body;
+
+      const session = sessions[token];
+
+      await session.clientSession.close();
+
+      return res.json(session.clientData);
+    } catch (err) {
+      return next();
+    }
+  },
 };
