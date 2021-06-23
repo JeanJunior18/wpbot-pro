@@ -26,7 +26,6 @@ class ClientManager {
       const tokenList = snapshot.val();
 
       for (const token in tokenList) {
-        console.log(token);
         this.sessions[token] = new VenomClient(token, tokenList[token]);
       }
     });
@@ -145,11 +144,11 @@ class ClientManager {
     try {
       const { organization, webhook, token, host } = req.body;
 
-      await this.database
-        .ref(`tokens/${token}`)
-        .set({ organization, webhook, host });
+      const clientInfo = { organization, webhook, host };
 
-      this.sessions[token] = new VenomClient(token);
+      await this.database.ref(`tokens/${token}`).set(clientInfo);
+
+      this.sessions[token] = new VenomClient(token, clientInfo);
       return res.json({
         message: `Token from ${organization} created - ${token}`,
       });
