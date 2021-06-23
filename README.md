@@ -19,13 +19,13 @@ docker-compose up --build -d
 - [x]  Token to client management
     - [x]  Create Token
     - [x]  Update Token
-        - [ ]  Update client info on update
+        - [ ]  Update client info on update token
     - [x]  Delete Token
     - [x]  Initialize Token
 - [x]  Get QrCode
 - [x]  Get Token connection status
 - [x]  Validade Whatsapp number
-- [ ]  Config debugger
+- [x]  Config debugger
 - [ ]  Create validation middlewares
 - [ ]  Automatic deployment
 - [ ]  Able multiple engine
