@@ -6,7 +6,7 @@
 
 1. Create a .env file with firebase credentials
 
-2. Install Docker and Docker Compose
+2. Install [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
 3. Run 
 
@@ -19,13 +19,25 @@ docker-compose up --build -d
 - [x]  Token to client management
     - [x]  Create Token
     - [x]  Update Token
+        - [ ]  Update client info on update
     - [x]  Delete Token
     - [x]  Initialize Token
 - [x]  Get QrCode
 - [x]  Get Token connection status
 - [x]  Validade Whatsapp number
+- [ ]  Config debugger
+- [ ]  Create validation middlewares
+- [ ]  Automatic deployment
+- [ ]  Able multiple engine
+- [ ]  Config a web socket event emitter
+- [ ]  Config error reports on whatsapp
 
-## Features API ⇒ Client
+## Venom Bot Engine
+
+- [x]  Update Status
+- [x]  Get single QRCode
+
+### Features API ⇒ Client
 
 - [x]  Send Text Message
 - [x]  Send Audio
@@ -33,7 +45,7 @@ docker-compose up --build -d
 - [x]  Send Video
 - [x]  Send Files
 
-## Features Client ⇒ Web Hook Bluml
+### Features Client ⇒ Web Hook Bluml
 
 - [x]  Receive Text Message
 - [x]  Receive Audio
@@ -42,3 +54,4 @@ docker-compose up --build -d
 - [x]  Receive Files
 - [x]  Receive Location
 - [x]  Receive Contacts
+- [x]  ACK Updates
