@@ -92,7 +92,7 @@ class ClientManager {
       } else {
         return res.status(418).json({ error: 'Invalid Command' });
       }
-      return res.json(`Command ${command} success`);
+      return res.json({ message: `Command ${command} success` });
     } catch (err) {
       return next(err);
     }
