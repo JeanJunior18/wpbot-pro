@@ -1,24 +1,34 @@
 const { sessions } = require('./ClientManagerController');
+const firebase = require('../../firebase');
+
+const database = firebase.database();
 
 module.exports = {
   async sessions(req, res, next) {
     try {
-      const data = Object.keys(sessions).map(token => {
-        const { clientInfo, clientData, webhookURL } = sessions[token];
+      const sessionsList = await new Promise(resolve => {
+        database.ref().once('value', snapshot => {
+          const hostList = snapshot.val();
 
-        const sessionInfo = {
-          token,
-          clientInfo: {
-            host: clientInfo.host,
-            organization: clientInfo.organization,
-          },
-          clientData,
-          webhookURL,
-        };
-        console.log(sessionInfo);
-        return sessionInfo;
+          const data = {};
+          for (const host in hostList) {
+            const { tokens } = hostList[host];
+            const tokenData = {};
+            for (const token in tokens) {
+              tokenData[token] = {
+                organization: tokens[token].organization,
+                status: tokens[token].status,
+                webhook: tokens[token].webhook,
+              };
+            }
+            data[host] = tokenData;
+          }
+
+          resolve(data);
+        });
       });
-      return res.json(data);
+
+      return res.json(sessionsList);
     } catch (err) {
       return next(err);
     }
@@ -32,7 +42,7 @@ module.exports = {
 
       await session.clientSession.close();
 
-      return res.json(session.clientData);
+      return res.json({ message: `${token} browser closed` });
     } catch (err) {
       return next();
     }

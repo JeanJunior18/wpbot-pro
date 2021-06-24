@@ -27,8 +27,6 @@ class ClientManager {
       if (!snapshot.val()) return;
       const clientInfo = snapshot.val();
 
-      console.log('Simulate start', token);
-      console.log(clientInfo);
       this.sessions[token] = new VenomClient(token, clientInfo);
     });
   }
@@ -38,12 +36,17 @@ class ClientManager {
       const token = req.params.token || req.body.token;
       const session = this.sessions[token];
 
-      if (!session)
-        return res.status(410).json({ error: 'Session is not avaliable' });
+      const clientStatusRef = this.database.ref(
+        `${this.serverName}/tokens/${token}/status`,
+      );
 
       if (!session.clientSession.page._closed) {
         const connectionState = await session.clientSession.getConnectionState();
-        session.clientData.connectionState = await session.clientSession.isConnected();
+
+        clientStatusRef.update({
+          connectionState,
+          isPhoneConnected: await session.clientSession.isConnected(),
+        });
 
         let qr = null;
         if (connectionState !== 'CONNECTED') {
@@ -51,25 +54,25 @@ class ClientManager {
         }
 
         if (qr) {
-          session.clientData.qrcode = qr.base64Image;
+          clientStatusRef.update({ qrCodeUrl: qr.base64Image });
         } else {
-          session.clientData.qrcode = null;
+          clientStatusRef.update({ qrCodeUrl: null });
         }
       } else {
-        session.clientData.connectionState = 'browserClosed';
-        session.clientData.isPhoneConnected = false;
+        clientStatusRef.update({
+          connectionState: 'browserClosed',
+          isPhoneConnected: false,
+        });
       }
 
-      const payload = {
-        token: session.token,
-        ...session.clientData,
-      };
+      const payload = await new Promise(resolve => {
+        clientStatusRef.once('value', snapshot => resolve(snapshot.val()));
+      });
 
       return res.json({
         status: {
           ...payload,
-          qrCodeUrl: session.clientData.qrcode,
-          myNumber: session.clientData.isPhoneConnected,
+          myNumber: payload.isPhoneConnected,
         },
       });
     } catch (err) {
