@@ -23,11 +23,12 @@ class ClientManager {
     const tokenRef = this.database.ref(`/${this.serverName}/tokens`);
 
     tokenRef.on('child_added', snapshot => {
+      console.log('CHILD ADDED');
       const token = snapshot.key;
       if (!snapshot.val()) return;
+      if (this.sessions[token]) return;
       const clientInfo = snapshot.val();
 
-      console.log('INSTANCE ', token);
       this.sessions[token] = new VenomClient(token, clientInfo);
     });
   }
