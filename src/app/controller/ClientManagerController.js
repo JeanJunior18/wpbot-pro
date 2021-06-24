@@ -27,6 +27,7 @@ class ClientManager {
       if (!snapshot.val()) return;
       const clientInfo = snapshot.val();
 
+      console.log('INSTANCE ', token);
       this.sessions[token] = new VenomClient(token, clientInfo);
     });
   }
