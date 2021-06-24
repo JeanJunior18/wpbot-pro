@@ -3617,9 +3617,9 @@
   "version" "1.1.2"
 
 "venom-bot@^3.0.14":
-  "integrity" "sha512-IJhMO+q9k/8RI3em3K8jhvbWZ2JLOpUmN25m7ijYwBN3/IcWfEeJYMkI2RFREvB0uvFxWmAT775KywnEW8eMWw=="
-  "resolved" "https://registry.npmjs.org/venom-bot/-/venom-bot-3.0.19.tgz"
-  "version" "3.0.19"
+  "integrity" "sha512-+8umBgPd1U6R0HjN2nqhJPbvaIMLHW5pLzEDuxFk4hxMIlp+tHzbqYgmyd37Gg1kHF/BaLn/ALf4tIUYCV+bNQ=="
+  "resolved" "https://registry.npmjs.org/venom-bot/-/venom-bot-3.0.20.tgz"
+  "version" "3.0.20"
   dependencies:
     "atob" "^2.1.2"
     "axios" "^0.21.0"
