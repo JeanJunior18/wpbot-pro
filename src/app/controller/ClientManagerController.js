@@ -85,7 +85,15 @@ class ClientManager {
       const { token, command } = req.body;
       const session = this.sessions[token];
 
-      if (command === 'logout') {
+      if (session.clientSession.page._closed) {
+        console.log('Opening Browser');
+
+        delete this.sessions[token].clientSession;
+        this.sessions[token] = new VenomClient(
+          token,
+          this.sessions[token].clientInfo,
+        );
+      } else if (command === 'logout') {
         await session.clientSession.logout();
       } else if (command === 'start') {
         await session.clientSession.restartService();
@@ -151,7 +159,7 @@ class ClientManager {
 
       await this.database.ref(`${host}/tokens/${token}`).set(clientInfo);
 
-      // this.sessions[token] = new VenomClient(token, clientInfo);
+      this.sessions[token] = new VenomClient(token, clientInfo);
       return res.json({
         message: `Token from ${organization} created - ${token}`,
       });
@@ -171,6 +179,8 @@ class ClientManager {
       }
 
       await this.database.ref(`${host}/tokens/${token}`).remove();
+
+      delete this.sessions[token];
 
       return res.json({ message: `Token ${token} deleted` });
     } catch (err) {

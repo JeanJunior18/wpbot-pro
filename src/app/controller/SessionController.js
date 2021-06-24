@@ -42,6 +42,16 @@ module.exports = {
 
       await session.clientSession.close();
 
+      firebase
+        .database()
+        .ref(`${process.env.SERVER_NAME}/tokens/${token}/status`)
+        .update({
+          browserStarted: false,
+          connectionState: 'CLOSED',
+          isPhoneConnected: false,
+          sessionStatus: 'browserClosed',
+        });
+
       return res.json({ message: `${token} browser closed` });
     } catch (err) {
       return next();
