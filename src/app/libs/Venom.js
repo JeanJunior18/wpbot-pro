@@ -25,6 +25,20 @@ class VenomClient {
     this.browserStarted = false;
 
     this.createClient(token);
+    this.initFirebaseListener();
+  }
+
+  initFirebaseListener() {
+    this.database
+      .ref(`${this.serverName}/tokens/${this.token}`)
+      .on('child_changed', snapshot => {
+        const allowedUpdateKeys = ['organization', 'webhook'];
+
+        if (allowedUpdateKeys.includes(snapshot.key)) {
+          this.clientInfo[snapshot.key] = snapshot.val();
+          this.webhookURL = `${this.clientInfo.webhook}?token=${this.token}`;
+        }
+      });
   }
 
   createClient(token) {
