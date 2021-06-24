@@ -19,17 +19,22 @@ docker-compose up --build -d
 - [x]  Token to client management
     - [x]  Create Token
     - [x]  Update Token
-        - [ ]  Update client info on update token
+    - [ ]  Update client info on update
     - [x]  Delete Token
+        - [ ]  Close a browser on delete
+        - [ ]  Update sessions on delete
+        - [ ]  Destroy object on delete
+    - [x]  Initialize Token
     - [x]  Initialize Token
 - [x]  Get QrCode
 - [x]  Get Token connection status
 - [x]  Validade Whatsapp number
 - [x]  Config debugger
+- [ ]  Restart client
 - [ ]  Create validation middlewares
 - [ ]  Automatic deployment
 - [ ]  Able multiple engine
-- [ ]  Config a web socket event emitter
+- [ ]  Config a firebase emitter
 - [ ]  Config error reports on whatsapp
 
 ## Venom Bot Engine

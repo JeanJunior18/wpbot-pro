@@ -4,10 +4,11 @@ const firebase = require('../../firebase');
 
 class ClientManager {
   constructor() {
-    console.log('Verify active tokens to connect');
     this.sessions = {};
     this.database = firebase.database();
+    this.serverName = process.env.SERVER_NAME;
     this.initializeClients();
+    console.log('Starting Server', this.serverName);
 
     this.getClientStatus = this.getClientStatus.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
@@ -19,14 +20,16 @@ class ClientManager {
   }
 
   initializeClients() {
-    const tokenRef = this.database.ref('tokens');
+    const tokenRef = this.database.ref(`/${this.serverName}/tokens`);
 
-    tokenRef.once('value', snapshot => {
+    tokenRef.on('child_added', snapshot => {
+      const token = snapshot.key;
       if (!snapshot.val()) return;
-      const token = Object.keys(snapshot.val())[0];
-      const value = snapshot.val()[token];
+      const clientInfo = snapshot.val();
 
-      this.sessions[token] = new VenomClient(token, value);
+      console.log('Simulate start', token);
+      console.log(clientInfo);
+      this.sessions[token] = new VenomClient(token, clientInfo);
     });
   }
 
@@ -38,7 +41,7 @@ class ClientManager {
       if (!session)
         return res.status(410).json({ error: 'Session is not avaliable' });
 
-      if (session.clientSession) {
+      if (!session.clientSession.page._closed) {
         const connectionState = await session.clientSession.getConnectionState();
         session.clientData.connectionState = await session.clientSession.isConnected();
 
@@ -52,6 +55,9 @@ class ClientManager {
         } else {
           session.clientData.qrcode = null;
         }
+      } else {
+        session.clientData.connectionState = 'browserClosed';
+        session.clientData.isPhoneConnected = false;
       }
 
       const payload = {
@@ -60,8 +66,11 @@ class ClientManager {
       };
 
       return res.json({
-        status: payload,
-        qrCodeUrl: session.clientData.qrcode,
+        status: {
+          ...payload,
+          qrCodeUrl: session.clientData.qrcode,
+          myNumber: session.clientData.isPhoneConnected,
+        },
       });
     } catch (err) {
       return next(err);
@@ -73,11 +82,6 @@ class ClientManager {
       const { token, command } = req.body;
       const session = this.sessions[token];
 
-      if (token && !session)
-        return res.status(410).json({ error: 'Token is not avaliable' });
-      if (!session.clientSession)
-        return res.status(428).json({ error: 'Token has not active session' });
-
       if (command === 'logout') {
         await session.clientSession.logout();
       } else if (command === 'start') {
@@ -85,7 +89,7 @@ class ClientManager {
       } else {
         return res.status(418).json({ error: 'Invalid Command' });
       }
-      return res.json(`Command ${command} success`);
+      return res.json({ message: `Command ${command} success` });
     } catch (err) {
       return next(err);
     }
@@ -94,9 +98,6 @@ class ClientManager {
   async sendMessage(req, res, next) {
     try {
       const { token, number, chat_id: chatID } = req.body;
-
-      if (token && !this.sessions[token])
-        return res.status(410).json({ error: 'Token is not avaliable' });
 
       if (!number)
         return res.status(410).json({ error: 'Phone number is not provided' });
@@ -143,11 +144,11 @@ class ClientManager {
     try {
       const { organization, webhook, token, host } = req.body;
 
-      await this.database
-        .ref(`tokens/${token}`)
-        .set({ organization, webhook, host });
+      const clientInfo = { organization, webhook };
 
-      this.sessions[token] = new VenomClient(token);
+      await this.database.ref(`${host}/tokens/${token}`).set(clientInfo);
+
+      // this.sessions[token] = new VenomClient(token, clientInfo);
       return res.json({
         message: `Token from ${organization} created - ${token}`,
       });
@@ -158,17 +159,15 @@ class ClientManager {
 
   async deleteToken(req, res, next) {
     try {
-      const { token } = req.params;
+      const { token, host } = req.params;
       const session = this.sessions[token];
-
-      if (token && !session)
-        return res.status(410).json({ error: 'Token is not avaliable' });
 
       if (session.clientSession) {
         await session.clientSession.logout();
         await session.clientSession.close();
       }
-      await this.database.ref(`tokens/${token}`).remove();
+
+      await this.database.ref(`${host}/tokens/${token}`).remove();
 
       return res.json({ message: `Token ${token} deleted` });
     } catch (err) {
@@ -178,13 +177,8 @@ class ClientManager {
 
   async updateToken(req, res, next) {
     try {
-      const { token } = req.params;
+      const { token, host: currentHost } = req.params;
       const { organization, host, webhook, sessionInfo } = req.body;
-
-      const session = this.sessions[token];
-
-      if (token && !session)
-        return res.status(410).json({ error: 'Token is not avaliable' });
 
       const data = {};
 
@@ -193,7 +187,18 @@ class ClientManager {
       if (webhook) data.webhook = webhook;
       if (sessionInfo) data.sessionInfo = sessionInfo;
 
-      await this.database.ref(`tokens/${token}`).update(data);
+      if (currentHost === host || !host)
+        await this.database.ref(`${currentHost}/tokens/${token}`).update(data);
+      else {
+        await this.database
+          .ref(`${currentHost}/tokens/${token}`)
+          .once('value', async snapshot => {
+            const client = snapshot.val();
+
+            await this.database.ref(`${currentHost}/tokens/${token}`).remove();
+            await this.database.ref(`${host}/tokens/${token}`).set(client);
+          });
+      }
 
       return res.json({ message: `Token ${token} updated` });
     } catch (err) {
@@ -206,9 +211,6 @@ class ClientManager {
       const { token, value } = req.body;
 
       const session = this.sessions[token];
-
-      if (token && !session)
-        return res.status(410).json({ error: 'Token is not avaliable' });
 
       const records = [];
 
@@ -226,4 +228,6 @@ class ClientManager {
   }
 }
 
-module.exports = new ClientManager();
+const clientManager = new ClientManager();
+
+module.exports = { clientManager, sessions: clientManager.sessions };
