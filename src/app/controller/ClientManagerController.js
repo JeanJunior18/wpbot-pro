@@ -72,7 +72,7 @@ class ClientManager {
       return res.json({
         status: {
           ...payload,
-          myNumber: payload.isPhoneConnected,
+          myNumber: !!this.sessions[token],
         },
       });
     } catch (err) {
