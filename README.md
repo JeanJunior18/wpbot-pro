@@ -34,7 +34,7 @@ docker-compose up --build -d
 - [ ]  Create validation middlewares
 - [ ]  Automatic deployment
 - [ ]  Able multiple engine
-- [ ]  Config a web socket event emitter
+- [ ]  Config a firebase emitter
 - [ ]  Config error reports on whatsapp
 
 ## Venom Bot Engine

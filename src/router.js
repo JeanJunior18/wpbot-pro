@@ -8,8 +8,8 @@ router.get('/sessions', sessionController.sessions);
 router.get('/client/:token', clientManager.getClientStatus);
 
 router.post('/api/v1/token', hasToken, clientManager.createToken);
-router.put('/api/v1/token/:token', clientManager.updateToken);
-router.delete('/api/v1/token/:token', clientManager.deleteToken);
+router.put('/api/v1/token/:host/:token', clientManager.updateToken);
+router.delete('/api/v1/token/:host/:token', clientManager.deleteToken);
 
 // Middleware to Check Active Session
 router.use(hasActiveSession);

@@ -7,6 +7,7 @@ class VenomClient {
     this.token = token;
     this.clientSession = null;
     this.clientInfo = clientInfo;
+    this.serverName = process.env.SERVER_NAME;
     this.clientData = {
       token,
       sessionStatus: 'starting',
@@ -66,7 +67,9 @@ class VenomClient {
     const sessionInfo = await client.getSessionTokenBrowser();
     this.clientData.connectionState = await client.getConnectionState();
 
-    this.database.ref(`tokens/${this.token}/sessionInfo`).set(sessionInfo);
+    this.database
+      .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`)
+      .set(sessionInfo);
 
     client.onMessage(data => {
       this.sendMessageToWebHook(data);
@@ -96,11 +99,13 @@ class VenomClient {
       } else if (state === 'CONNECTED') {
         const updateSessionInfo = await client.getSessionTokenBrowser();
         this.database
-          .ref(`tokens/${this.token}/sessionInfo`)
+          .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`)
           .set(updateSessionInfo);
       } else if (state === 'UNPAIRED') {
         this.clientData.isPhoneConnected = false;
-        this.database.ref(`tokens/${this.token}/sessionInfo`).remove();
+        this.database
+          .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`)
+          .remove();
       } else {
         this.clientData.isPhoneConnected = false;
       }
