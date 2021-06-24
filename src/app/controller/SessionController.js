@@ -5,7 +5,6 @@ const database = firebase.database();
 
 module.exports = {
   async sessions(req, res, next) {
-    console.log('List Sessions');
     try {
       const sessionsList = await new Promise(resolve => {
         database.ref().once('value', snapshot => {
@@ -36,7 +35,6 @@ module.exports = {
   },
 
   async closeSession(req, res, next) {
-    console.log('Close Session', req.body);
     try {
       const { token } = req.body;
 

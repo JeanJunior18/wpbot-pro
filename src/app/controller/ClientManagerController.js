@@ -23,7 +23,6 @@ class ClientManager {
     const tokenRef = this.database.ref(`/${this.serverName}/tokens`);
 
     tokenRef.on('child_added', snapshot => {
-      console.log('CHILD ADDED');
       const token = snapshot.key;
       if (!snapshot.val()) return;
       if (this.sessions[token]) return;
@@ -34,7 +33,6 @@ class ClientManager {
   }
 
   async getClientStatus(req, res, next) {
-    console.log('Get Client Status', req.body);
     try {
       const token = req.params.token || req.body.token;
       const session = this.sessions[token];
@@ -84,7 +82,6 @@ class ClientManager {
   }
 
   async restartAndLogout(req, res, next) {
-    console.log('Command', req.body);
     try {
       const { token, command } = req.body;
       const session = this.sessions[token];
@@ -111,7 +108,6 @@ class ClientManager {
   }
 
   async sendMessage(req, res, next) {
-    console.log('Send Message', req.body);
     try {
       const { token, number, chat_id: chatID } = req.body;
 
@@ -157,7 +153,6 @@ class ClientManager {
   }
 
   async createToken(req, res, next) {
-    console.log('Create token', req.body);
     try {
       const { organization, webhook, token, host } = req.body;
 
@@ -165,7 +160,6 @@ class ClientManager {
 
       await this.database.ref(`${host}/tokens/${token}`).set(clientInfo);
 
-      this.sessions[token] = new VenomClient(token, clientInfo);
       return res.json({
         message: `Token from ${organization} created - ${token}`,
       });
@@ -175,7 +169,6 @@ class ClientManager {
   }
 
   async deleteToken(req, res, next) {
-    console.log('Delete Token', req.body);
     try {
       const { token, host } = req.params;
       const session = this.sessions[token];
@@ -196,7 +189,6 @@ class ClientManager {
   }
 
   async updateToken(req, res, next) {
-    console.log('Update Token', req.body);
     try {
       const { token, host: currentHost } = req.params;
       const { organization, host, webhook, sessionInfo } = req.body;
@@ -228,7 +220,6 @@ class ClientManager {
   }
 
   async validateNumber(req, res, next) {
-    console.log('Validate Number', req.body);
     try {
       const { token, value } = req.body;
 

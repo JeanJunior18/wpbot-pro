@@ -42,8 +42,6 @@ class VenomClient {
   }
 
   createClient(token) {
-    console.log('Create a Client for ', token);
-
     Venom.create(
       token,
       null,
@@ -101,7 +99,7 @@ class VenomClient {
     });
 
     client.onStateChange(async state => {
-      console.log('State Udpate', state);
+      console.log(this.token, 'State Udpate', state);
       this.clientStatusRef.update({ connectionState: state });
 
       if (state === 'CONFLICT') {
