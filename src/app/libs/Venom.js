@@ -54,7 +54,7 @@ class VenomClient {
         disableSpins: true,
         disableWelcome: true,
         waitForLogin: false,
-        useChrome: false,
+        useChrome: true,
         browserArgs: ['--no-sandbox', '--disable-setuid-sandbox'],
       },
       this.clientInfo?.sessionInfo || {},
