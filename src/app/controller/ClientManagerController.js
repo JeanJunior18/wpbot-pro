@@ -1,5 +1,6 @@
 const { default: axios } = require('axios');
 const VenomClient = require('../libs/Venom');
+const BaileysClient = require('../libs/Baileys');
 const firebase = require('../../firebase');
 
 class ClientManager {
@@ -19,6 +20,17 @@ class ClientManager {
     this.validateNumber = this.validateNumber.bind(this);
   }
 
+  startService(token, clientInfo) {
+    switch (process.env.ENGINE.toLowerCase()) {
+      case 'venom':
+        return new VenomClient(token, clientInfo);
+      case 'baileys':
+        return new BaileysClient(token, clientInfo);
+      default:
+        return new BaileysClient(token, clientInfo);
+    }
+  }
+
   initializeClients() {
     const tokenRef = this.database.ref(`/${this.serverName}/tokens`);
 
@@ -28,7 +40,7 @@ class ClientManager {
       if (this.sessions[token]) return;
       const clientInfo = snapshot.val();
 
-      this.sessions[token] = new VenomClient(token, clientInfo);
+      this.sessions[token] = this.startService(token, clientInfo);
     });
   }
 
@@ -41,8 +53,8 @@ class ClientManager {
         `${this.serverName}/tokens/${token}/status`,
       );
 
-      if (!session.clientSession.page._closed) {
-        const connectionState = await session.clientSession.getConnectionState();
+      if (!session.isClosed) {
+        const connectionState = await session.getConnectionState();
 
         clientStatusRef.update({
           connectionState,
@@ -86,18 +98,18 @@ class ClientManager {
       const { token, command } = req.body;
       const session = this.sessions[token];
 
-      if (session.clientSession.page._closed) {
+      if (session.isClosed()) {
         console.log('Opening Browser');
 
         delete this.sessions[token].clientSession;
-        this.sessions[token] = new VenomClient(
+        this.sessions[token] = this.startService(
           token,
           this.sessions[token].clientInfo,
         );
       } else if (command === 'logout') {
-        await session.clientSession.logout();
+        await session.logout();
       } else if (command === 'start') {
-        await session.clientSession.restartService();
+        await session.restart();
       } else {
         return res.status(418).json({ error: 'Invalid Command' });
       }
@@ -174,8 +186,8 @@ class ClientManager {
       const session = this.sessions[token];
 
       if (session.clientSession) {
-        await session.clientSession.logout();
-        await session.clientSession.close();
+        await session.logout();
+        await session.close();
       }
 
       await this.database.ref(`${host}/tokens/${token}`).remove();
@@ -225,14 +237,7 @@ class ClientManager {
 
       const session = this.sessions[token];
 
-      const records = [];
-
-      for (const number of value) {
-        const { numberExists } = await session.clientSession.checkNumberStatus(
-          `${number}@c.us`,
-        );
-        records.push({ number, exist: numberExists || false });
-      }
+      const records = session.validateNumber(value);
 
       return res.json({ records });
     } catch (err) {
