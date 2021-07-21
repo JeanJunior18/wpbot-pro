@@ -24,7 +24,7 @@ class BaileysClient {
     this.clientInfo = clientInfo;
     this.browserStarted = false;
 
-    this.createClient(token);
+    this.start(token);
     this.initFirebaseListener();
   }
 
@@ -41,7 +41,7 @@ class BaileysClient {
       });
   }
 
-  async createClient(token) {
+  async start(token) {
     console.log(token);
     const conn = new WAConnection();
 
@@ -58,6 +58,10 @@ class BaileysClient {
       console.log(`you have ${Object.keys(conn.contacts).length} contacts`);
     });
 
+    conn.on('open', () => {
+      console.log(conn.base64EncodedAuthInfo());
+    });
+
     await conn.connect().catch(console.error);
 
     conn.on('chat-update', chatUpdate => {
@@ -69,9 +73,23 @@ class BaileysClient {
     });
   }
 
+  getConnectionState() {}
+
+  getQrCode() {}
+
+  validateNumber() {}
+
   sendMessageToClient() {}
 
   sendMessageToWebHook() {}
+
+  logout() {}
+
+  restart() {}
+
+  close() {}
+
+  isClosed() {}
 }
 
 module.exports = BaileysClient;

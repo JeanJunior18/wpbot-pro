@@ -4642,10 +4642,10 @@ vary@^1, vary@~1.1.2:
   resolved "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
 
-venom-bot@^3.0.14:
-  version "3.0.20"
-  resolved "https://registry.npmjs.org/venom-bot/-/venom-bot-3.0.20.tgz"
-  integrity sha512-+8umBgPd1U6R0HjN2nqhJPbvaIMLHW5pLzEDuxFk4hxMIlp+tHzbqYgmyd37Gg1kHF/BaLn/ALf4tIUYCV+bNQ==
+venom-bot@^3.0.21:
+  version "3.0.21"
+  resolved "https://registry.yarnpkg.com/venom-bot/-/venom-bot-3.0.21.tgz#15f98945faa6826cfa7df6af9b166ef31bba9cc2"
+  integrity sha512-e+watdyiVU+QBT9yApmeOQHpTykpdFqzQiP7PsCrgkIQUu3ckeEHLCTJ12yfqwtnziUFQjA9dlwbeSnrwRuo0Q==
   dependencies:
     atob "^2.1.2"
     axios "^0.21.0"
