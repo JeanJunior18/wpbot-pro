@@ -52,28 +52,26 @@ class ClientManager {
       const clientStatusRef = this.database.ref(
         `${this.serverName}/tokens/${token}/status`,
       );
-
-      if (!session.isClosed) {
+      if (!session.isClosed()) {
         const connectionState = await session.getConnectionState();
 
         clientStatusRef.update({
           connectionState,
-          isPhoneConnected: await session.clientSession.isConnected(),
+          isPhoneConnected: await session.isConnected(),
         });
 
         let qr = null;
-        if (connectionState !== 'CONNECTED') {
-          qr = await session.clientSession.getQrCode();
+        if (connectionState !== 'CONNECTED' && connectionState !== 'open') {
+          qr = await session.getQrCode();
         }
 
         if (qr) {
-          clientStatusRef.update({ qrCodeUrl: qr.base64Image });
+          clientStatusRef.update({ qrCodeUrl: qr });
         } else {
           clientStatusRef.update({ qrCodeUrl: null });
         }
       } else {
         clientStatusRef.update({
-          connectionState: 'browserClosed',
           isPhoneConnected: false,
         });
       }

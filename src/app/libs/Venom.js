@@ -121,12 +121,12 @@ class VenomClient {
     });
   }
 
-  async getConnectionState() {
-    await this.clientSession.getConnectionState();
+  getConnectionState() {
+    return this.clientSession.getConnectionState();
   }
 
-  async getQrCode() {
-    await this.clientSession.getQrCode();
+  getQrCode() {
+    return this.clientSession.getQrCode()?.base64Image;
   }
 
   async validateNumber(value) {
@@ -193,6 +193,10 @@ class VenomClient {
 
   async close() {
     await this.clientSession.close();
+  }
+
+  isConnected() {
+    return this.clientSession.isConnected();
   }
 
   isClosed() {

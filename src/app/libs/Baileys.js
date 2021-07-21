@@ -1,4 +1,5 @@
 const { WAConnection } = require('@adiwajshing/baileys');
+const QRCode = require('qrcode');
 const firebase = require('../../firebase');
 
 class BaileysClient {
@@ -43,34 +44,25 @@ class BaileysClient {
 
   async start(token) {
     console.log(token);
-    const conn = new WAConnection();
+    this.conn = new WAConnection();
 
     if (this.clientInfo.sessionInfo)
-      conn.loadAuthInfo(this.clientInfo.sessionInfo);
+      this.conn.loadAuthInfo(this.clientInfo.sessionInfo);
 
-    conn.on('chats-received', async ({ hasNewChats }) => {
-      console.log(
-        `you have ${conn.chats.length} chats, new chats available: ${hasNewChats}`,
-      );
+    this.conn.removeAllListeners('qr');
 
-      const unread = await conn.loadAllUnreadMessages();
-      console.log(`you have ${unread.length} unread messages`);
-    });
-
-    conn.on('contacts-received', () => {
-      console.log(`you have ${Object.keys(conn.contacts).length} contacts`);
-    });
-
-    conn.on('open', () => {
-      const updateSessionInfo = conn.base64EncodedAuthInfo();
+    this.conn.on('open', () => {
+      const updateSessionInfo = this.conn.base64EncodedAuthInfo();
       this.database
         .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`)
         .set(updateSessionInfo);
     });
 
-    await conn.connect().catch(console.error);
+    this.conn.browserDescription[0] = `Blubots ${this.serverName}`;
 
-    conn.on('chat-update', chatUpdate => {
+    await this.conn.connect().catch(console.error);
+
+    this.conn.on('chat-update', chatUpdate => {
       if (chatUpdate.messages && chatUpdate.count) {
         const message = chatUpdate.messages.all()[0];
         console.log('New message');
@@ -79,9 +71,17 @@ class BaileysClient {
     });
   }
 
-  getConnectionState() {}
+  getConnectionState() {
+    console.log(this.conn.state);
+    return this.conn.state;
+  }
 
-  getQrCode() {}
+  async getQrCode() {
+    const qrcode = await QRCode.toDataURL(
+      (await this.conn.requestNewQRCodeRef()).ref,
+    );
+    return qrcode;
+  }
 
   validateNumber() {}
 
@@ -95,7 +95,13 @@ class BaileysClient {
 
   close() {}
 
-  isClosed() {}
+  isConnected() {
+    return this.conn.phoneConnected;
+  }
+
+  isClosed() {
+    return false;
+  }
 }
 
 module.exports = BaileysClient;
