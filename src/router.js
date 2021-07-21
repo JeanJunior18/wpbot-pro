@@ -4,6 +4,8 @@ const sessionController = require('./app/controller/SessionController');
 const hasActiveSession = require('./app/middlewares/hasActiveSession');
 const hasToken = require('./app/middlewares/hasToken');
 
+router.get('/api/v1/app/info/:token', sessionController.renderQRcode);
+
 router.get('/api/v1/app/sessions/', sessionController.sessions);
 router.get('/api/v1/app/sessions/:host', sessionController.sessions);
 

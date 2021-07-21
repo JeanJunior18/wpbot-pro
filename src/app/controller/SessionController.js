@@ -57,4 +57,17 @@ module.exports = {
       return next();
     }
   },
+
+  renderQRcode(req, res, next) {
+    try {
+      const { token } = req.params;
+      console.log(token);
+      database.ref().once('value', snapshot => {
+        console.log(snapshot);
+      });
+      return res.render('qrcode', { qrcode: 123 });
+    } catch (err) {
+      return next(err);
+    }
+  },
 };
