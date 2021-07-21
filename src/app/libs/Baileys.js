@@ -45,6 +45,9 @@ class BaileysClient {
     console.log(token);
     const conn = new WAConnection();
 
+    if (this.clientInfo.sessionInfo)
+      conn.loadAuthInfo(this.clientInfo.sessionInfo);
+
     conn.on('chats-received', async ({ hasNewChats }) => {
       console.log(
         `you have ${conn.chats.length} chats, new chats available: ${hasNewChats}`,
@@ -59,7 +62,10 @@ class BaileysClient {
     });
 
     conn.on('open', () => {
-      console.log(conn.base64EncodedAuthInfo());
+      const updateSessionInfo = conn.base64EncodedAuthInfo();
+      this.database
+        .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`)
+        .set(updateSessionInfo);
     });
 
     await conn.connect().catch(console.error);
