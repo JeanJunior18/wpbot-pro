@@ -1,4 +1,5 @@
 const { WAConnection } = require('@adiwajshing/baileys');
+const { default: axios } = require('axios');
 const QRCode = require('qrcode');
 const firebase = require('../../firebase');
 
@@ -69,9 +70,18 @@ class BaileysClient {
     this.conn.on('chat-update', chatUpdate => {
       if (chatUpdate.messages && chatUpdate.count) {
         const message = chatUpdate.messages.all()[0];
-        console.log('New message');
-        console.log(message);
-      } else console.log(chatUpdate);
+
+        if (message.key.remoteJid === 'status@broadcast') {
+          return false;
+        }
+        if (message.key.remoteJid.includes('@g.us')) {
+          return false;
+        }
+
+        this.sendMessageToWebHook(message);
+      }
+      console.log(chatUpdate);
+      return true;
     });
   }
 
@@ -89,9 +99,60 @@ class BaileysClient {
 
   validateNumber() {}
 
-  sendMessageToClient() {}
+  async sendMessageToClient(data) {
+    const {
+      token,
+      number,
+      url,
+      type,
+      mimetype,
+      caption,
+      filename,
+      message,
+      chat_id: chatId,
+    } = data;
 
-  sendMessageToWebHook() {}
+    let sentMessage = {};
+
+    if (type === 'conversation') {
+      sentMessage = await this.conn.sendMessage(number, message, type);
+    } else {
+      sentMessage = await this.conn.sendMessage(number, { url }, type, {
+        mimetype,
+        caption,
+        filename,
+        ptt: true,
+      });
+    }
+
+    await axios
+      .post(
+        this.webhookURL,
+        {
+          sentMessage,
+          chatId,
+          status: 2,
+        },
+        { params: { token } },
+      )
+      .catch(err => console.log(err.response?.data || err.message));
+  }
+
+  sendMessageToWebHook(data) {
+    console.log('Send Message to Webhook', this.webhookURL);
+
+    axios
+      .post(this.webhookURL, {
+        ...data,
+        engine: 'venom',
+      })
+      .then(res => {
+        console.log(res.data);
+      })
+      .catch(err => {
+        console.log(err.message);
+      });
+  }
 
   logout() {}
 
