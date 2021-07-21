@@ -2,14 +2,16 @@ html
   head
     title Render HTML using PUG
   body
-    h1 Welcome
 doctype html
-html(lang="en")
+html(lang="pt-br")
   head
     meta(charset="UTF-8")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title Document
   body 
-    h3= qrcode
-    img(src=qrcode)
+    h3= organization
+    h4= status.token
+    img(src=status.qrCodeUrl)
+    h4 webkook: 
+    span= webhook

@@ -60,6 +60,10 @@ class BaileysClient {
 
     this.conn.browserDescription[0] = `Blubots ${this.serverName}`;
 
+    this.conn.on('qr', async qr => {
+      this.clientStatusRef.update({ qrCodeUrl: await QRCode.toDataURL(qr) });
+    });
+
     await this.conn.connect().catch(console.error);
 
     this.conn.on('chat-update', chatUpdate => {

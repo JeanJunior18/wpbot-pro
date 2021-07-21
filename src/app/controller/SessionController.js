@@ -58,14 +58,19 @@ module.exports = {
     }
   },
 
-  renderQRcode(req, res, next) {
+  async renderQRcode(req, res, next) {
     try {
       const { token } = req.params;
-      console.log(token);
-      database.ref().once('value', snapshot => {
-        console.log(snapshot);
+
+      const data = await new Promise(resolve => {
+        database
+          .ref(`${process.env.SERVER_NAME}/tokens/${token}`)
+          .once('value', snapshot => {
+            console.log(snapshot.val());
+            resolve(snapshot.val());
+          });
       });
-      return res.render('qrcode', { qrcode: 123 });
+      return res.render('qrcode', data);
     } catch (err) {
       return next(err);
     }
