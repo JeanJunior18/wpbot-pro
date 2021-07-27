@@ -80,7 +80,10 @@ class BaileysClient {
 
         this.sendMessageToWebHook(message);
       }
-      console.log(chatUpdate);
+
+      this.getHistoryMessages('558699167437', 2, true);
+      console.log(chatUpdate.messages.paginated());
+
       return true;
     });
   }
@@ -88,6 +91,20 @@ class BaileysClient {
   getConnectionState() {
     console.log(this.conn.state);
     return this.conn.state;
+  }
+
+  async getHistoryMessages(phoneNumber, limit = 2, onlyUnread) {
+    const messages = onlyUnread
+      ? await this.conn.loadAllUnreadMessages(`${phoneNumber}@s.whatsapp.net`)
+      : await this.conn.loadMessages(
+          `${phoneNumber}@s.whatsapp.net`,
+          limit,
+          null,
+          true,
+        );
+
+    console.log('Messages', messages);
+    return messages;
   }
 
   async getQrCode() {
@@ -140,11 +157,12 @@ class BaileysClient {
 
   sendMessageToWebHook(data) {
     console.log('Send Message to Webhook', this.webhookURL);
+    // console.log(data);
 
     axios
       .post(this.webhookURL, {
         ...data,
-        engine: 'venom',
+        engine: 'baileys',
       })
       .then(res => {
         console.log(res.data);
