@@ -24,4 +24,8 @@ router.post('/api/v1/app/validate-phone', clientManager.validateNumber);
 
 router.post('/api/v1/app/close-session/', sessionController.closeSession);
 
+
+// Chat API
+router.get('/api/v2/attendances', clientManager.attendanceList);
+router.get('/api/v2/attendance/:phone', clientManager.attendanceMessages);
 module.exports = router;

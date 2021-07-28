@@ -68,7 +68,8 @@ class BaileysClient {
     await this.conn.connect().catch(console.error);
 
     this.conn.on('chat-update', chatUpdate => {
-      if (chatUpdate.messages && chatUpdate.count) {
+      console.log(chatUpdate.messages.all()[0])
+      if (chatUpdate.messages) {
         const message = chatUpdate.messages.all()[0];
 
         if (message.key.remoteJid === 'status@broadcast') {
@@ -78,12 +79,8 @@ class BaileysClient {
           return false;
         }
 
-        this.sendMessageToWebHook(message);
+        this.sendMessageToWebHook(message)
       }
-
-      this.getHistoryMessages('558699167437', 2, true);
-      console.log(chatUpdate.messages.paginated());
-
       return true;
     });
   }
@@ -103,8 +100,11 @@ class BaileysClient {
           true,
         );
 
-    console.log('Messages', messages);
     return messages;
+  }
+
+  async getChats() {
+    return this.conn.loadChats();
   }
 
   async getQrCode() {

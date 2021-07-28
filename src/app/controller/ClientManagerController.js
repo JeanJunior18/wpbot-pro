@@ -18,6 +18,8 @@ class ClientManager {
     this.updateToken = this.updateToken.bind(this);
     this.restartAndLogout = this.restartAndLogout.bind(this);
     this.validateNumber = this.validateNumber.bind(this);
+    this.attendanceList = this.attendanceList.bind(this);
+    this.attendanceMessages = this.attendanceMessages.bind(this);
   }
 
   startService(token, clientInfo) {
@@ -238,6 +240,34 @@ class ClientManager {
       const records = session.validateNumber(value);
 
       return res.json({ records });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async attendanceMessages (req, res, next) {
+    try {
+      const { limit } = req.query
+      const { phone } = req.params
+      const { token } = req.body
+      const session = this.sessions[token];
+      const { messages } = await session.getHistoryMessages(phone, limit || 10)
+
+      return res.json({count: limit, results: messages})
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async attendanceList (req, res, next) {
+    try {
+      const { token } = req.body;
+
+      const session = this.sessions[token];
+
+      const chats = await session.getChats()
+
+      return res.json(chats)
     } catch (err) {
       return next(err);
     }
