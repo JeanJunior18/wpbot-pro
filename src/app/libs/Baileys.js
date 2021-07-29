@@ -113,6 +113,7 @@ class BaileysClient {
     for(const chat of chats) {
       if(!chat.jid.includes('@g.us')){
       chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {})
+      chat.messages = await this.conn.loadMessages(chat.jid, 10).catch(() => {})
       list[chat.jid.replace(/[^0-9]+/g, '')] = JSON.parse(JSON.stringify(chat))}
     }
 
