@@ -53,8 +53,8 @@ class BaileysClient {
     this.conn.removeAllListeners('qr');
 
     this.conn.on('chats-received', async ({ hasNewChats }) => {
-      this.saveAllChats()
-  })
+      this.saveAllChats();
+    });
 
     this.conn.on('open', () => {
       const updateSessionInfo = this.conn.base64EncodedAuthInfo();
@@ -82,7 +82,7 @@ class BaileysClient {
           return false;
         }
 
-        this.sendMessageToWebHook(message)
+        this.sendMessageToWebHook(message);
       }
       return true;
     });
@@ -97,37 +97,46 @@ class BaileysClient {
     const messages = onlyUnread
       ? await this.conn.loadAllUnreadMessages(`${phoneNumber}@s.whatsapp.net`)
       : await this.conn.loadMessages(
-          `${phoneNumber}@s.whatsapp.net`,
-          limit,
-          null,
-          true,
-        );
+        `${phoneNumber}@s.whatsapp.net`,
+        limit,
+        null,
+        true,
+      );
 
     return messages;
   }
 
   async saveAllChats() {
-    const {chats} = this.conn.loadChats()
-    const list = {}
+    const {chats} = this.conn.loadChats();
 
     for(const chat of chats) {
       if(!chat.jid.includes('@g.us')){
-      chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {})
-      chat.messages = await this.conn.loadMessages(chat.jid, 10).catch(() => {})
-      list[chat.jid.replace(/[^0-9]+/g, '')] = JSON.parse(JSON.stringify(chat))}
+        chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {});
+        chat.messages = await this.getMessages(chat.jid, 10);
+        
+        this.database
+          .ref(`${this.serverName}/tokens/${this.token}/chats/${chat.jid.replace(/[^0-9]+/g, '')}`)
+          .set(JSON.parse(JSON.stringify(chat)));
+      }
     }
 
-    this.database
-    .ref(`${this.serverName}/tokens/${this.token}/chats`)
-    .set(list)
+  }
+
+  async getMessages (jid, limit) {
+    const {messages: data} = await this.conn.loadMessages(jid, limit).catch(() => {});
+    const messages = {};
+    for (const message of data){
+      messages[message.key.id] = message;
+    }
+    return messages;
   }
 
   async getChats() {
     const chats = await new Promise((res) => {this.database
       .ref(`${this.serverName}/tokens/${this.token}/chats`)
-      .once('value', snapshot => res(snapshot.val()))})
+      .once('value', snapshot => res(snapshot.val()));});
 
-    return chats
+    return chats;
   }
 
   async getQrCode() {
