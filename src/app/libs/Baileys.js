@@ -8,6 +8,7 @@ class BaileysClient {
     this.serverName = process.env.SERVER_NAME;
     this.database = firebase.database();
     this.webhookURL = `${clientInfo.webhook}?token=${token}`;
+    this.capturedChats = false;
 
     this.clientStatusRef = this.database.ref(
       `${this.serverName}/tokens/${token}/status`,
@@ -52,7 +53,9 @@ class BaileysClient {
 
     this.conn.removeAllListeners('qr');
 
-    this.conn.on('chats-received', async ({ hasNewChats }) => {
+    this.conn.on('chats-received', async () => {
+      
+      console.log('=========> Chat Received');
       this.saveAllChats();
     });
 
@@ -70,8 +73,13 @@ class BaileysClient {
     });
 
     await this.conn.connect().catch(console.error);
+    this.conn.version = [2, 2123, 7];
 
     this.conn.on('chat-update', chatUpdate => {
+      // if(!this.capturedChats) { 
+      //   this.saveAllChats();
+      //   this.capturedChats= true;
+      // }
       if (chatUpdate.messages) {
         const message = chatUpdate.messages.all()[0];
 
@@ -82,7 +90,7 @@ class BaileysClient {
           return false;
         }
 
-        this.sendMessageToWebHook(message);
+        this.saveNewMessage(message, message.key.remoteJid);
       }
       return true;
     });
@@ -107,15 +115,16 @@ class BaileysClient {
   }
 
   async saveAllChats() {
-    const {chats} = this.conn.loadChats();
+    console.log(123456);
+    const chats = this.conn.chats.array;
 
     for(const chat of chats) {
       if(!chat.jid.includes('@g.us')){
         chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {});
-        chat.messages = await this.getMessages(chat.jid, 10);
-        
+        const phone = chat.jid.replace(/[^0-9]+/g, '');
+
         this.database
-          .ref(`${this.serverName}/tokens/${this.token}/chats/${chat.jid.replace(/[^0-9]+/g, '')}`)
+          .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}`)
           .set(JSON.parse(JSON.stringify(chat)));
       }
     }
@@ -124,11 +133,13 @@ class BaileysClient {
 
   async getMessages (jid, limit) {
     const {messages: data} = await this.conn.loadMessages(jid, limit).catch(() => {});
-    const messages = {};
+
+    const phone = jid.replace(/[^0-9]+/g, '');
     for (const message of data){
-      messages[message.key.id] = message;
+      this.database
+        .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}/messages/${message.key.id}`)
+        .set(JSON.parse(JSON.stringify(message)));
     }
-    return messages;
   }
 
   async getChats() {
@@ -185,6 +196,14 @@ class BaileysClient {
         { params: { token } },
       )
       .catch(err => console.log(err.response?.data || err.message));
+  }
+
+  saveNewMessage(message, jid) {
+    console.log(jid,message);
+    // const phone = jid.replace(/[^0-9]+/g, '');
+    // this.database
+    //   .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}/messages/${message.key.id}`)
+    //   .set(JSON.parse(JSON.stringify(message)));
   }
 
   sendMessageToWebHook(data) {
