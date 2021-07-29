@@ -52,6 +52,10 @@ class BaileysClient {
 
     this.conn.removeAllListeners('qr');
 
+    this.conn.on('chats-received', async ({ hasNewChats }) => {
+      this.saveAllChats()
+  })
+
     this.conn.on('open', () => {
       const updateSessionInfo = this.conn.base64EncodedAuthInfo();
       this.database
@@ -68,7 +72,6 @@ class BaileysClient {
     await this.conn.connect().catch(console.error);
 
     this.conn.on('chat-update', chatUpdate => {
-      console.log(chatUpdate.messages.all()[0])
       if (chatUpdate.messages) {
         const message = chatUpdate.messages.all()[0];
 
@@ -103,8 +106,27 @@ class BaileysClient {
     return messages;
   }
 
+  async saveAllChats() {
+    const {chats} = this.conn.loadChats()
+    const list = {}
+
+    for(const chat of chats) {
+      if(!chat.jid.includes('@g.us')){
+      chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {})
+      list[chat.jid.replace(/[^0-9]+/g, '')] = JSON.parse(JSON.stringify(chat))}
+    }
+
+    this.database
+    .ref(`${this.serverName}/tokens/${this.token}/chats`)
+    .set(list)
+  }
+
   async getChats() {
-    return this.conn.loadChats();
+    const chats = await new Promise((res) => {this.database
+      .ref(`${this.serverName}/tokens/${this.token}/chats`)
+      .once('value', snapshot => res(snapshot.val()))})
+
+    return chats
   }
 
   async getQrCode() {

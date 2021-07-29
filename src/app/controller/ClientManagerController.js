@@ -64,7 +64,7 @@ class ClientManager {
 
         let qr = null;
         if (connectionState !== 'CONNECTED' && connectionState !== 'open') {
-          qr = await session.getQrCode();
+          qr = await session.getQrCode().catch(() => console.log('Não foi possível pegar QRcode'));
         }
 
         if (qr) {
