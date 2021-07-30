@@ -115,17 +115,27 @@ class BaileysClient {
   }
 
   async saveAllChats() {
-    console.log(123456);
     const chats = this.conn.chats.array;
 
-    for(const chat of chats) {
+    for(const i in chats) {
+      const chat = JSON.parse(JSON.stringify(chats[i]));
       if(!chat.jid.includes('@g.us')){
-        chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {});
+        chat.avatar = await this.conn.getProfilePicture(chat.jid).catch(() => {}) || '';
         const phone = chat.jid.replace(/[^0-9]+/g, '');
+        
+        const messages = JSON.parse(JSON.stringify(chat.messages));
+        chat.messages = {};
+
+        for(const msg of messages) {
+          const {id} = msg.key;
+          chat.messages[id] = msg;
+        }
 
         this.database
           .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}`)
-          .set(JSON.parse(JSON.stringify(chat)));
+          .set(chat);
+
+        
       }
     }
 
@@ -200,10 +210,10 @@ class BaileysClient {
 
   saveNewMessage(message, jid) {
     console.log(jid,message);
-    // const phone = jid.replace(/[^0-9]+/g, '');
-    // this.database
-    //   .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}/messages/${message.key.id}`)
-    //   .set(JSON.parse(JSON.stringify(message)));
+    const phone = jid.replace(/[^0-9]+/g, '');
+    this.database
+      .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}/messages/${message.key.id}`)
+      .set(JSON.parse(JSON.stringify(message)));
   }
 
   sendMessageToWebHook(data) {
