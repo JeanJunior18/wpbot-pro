@@ -55,7 +55,6 @@ class BaileysClient {
 
     this.conn.on('chats-received', async () => {
       
-      console.log('=========> Chat Received');
       this.saveAllChats();
     });
 
@@ -101,17 +100,16 @@ class BaileysClient {
     return this.conn.state;
   }
 
-  async getHistoryMessages(phoneNumber, limit = 2, onlyUnread) {
-    const messages = onlyUnread
-      ? await this.conn.loadAllUnreadMessages(`${phoneNumber}@s.whatsapp.net`)
-      : await this.conn.loadMessages(
-        `${phoneNumber}@s.whatsapp.net`,
-        limit,
-        null,
-        true,
-      );
-
-    return messages;
+  async getHistoryMessages(phoneNumber, limit = 10) {
+    await this.conn.loadAllMessages(
+      `${phoneNumber}@s.whatsapp.net`,
+      message => {
+        
+        this.database
+          .ref(`${this.serverName}/tokens/${this.token}/chats/${phoneNumber}/messages/${message.key.id}`)
+          .set(JSON.parse(JSON.stringify(message)));
+      },1,true
+    );
   }
 
   async saveAllChats() {
@@ -171,7 +169,6 @@ class BaileysClient {
 
   async sendMessageToClient(data) {
     const {
-      token,
       number,
       url,
       type,
@@ -179,38 +176,26 @@ class BaileysClient {
       caption,
       filename,
       message,
-      chat_id: chatId,
     } = data;
 
-    let sentMessage = {};
-
     if (type === 'conversation') {
-      sentMessage = await this.conn.sendMessage(number, message, type);
+      await this.conn.sendMessage(number, message, type);
     } else {
-      sentMessage = await this.conn.sendMessage(number, { url }, type, {
+      await this.conn.sendMessage(number, { url }, type, {
         mimetype,
         caption,
         filename,
         ptt: true,
       });
     }
-
-    await axios
-      .post(
-        this.webhookURL,
-        {
-          sentMessage,
-          chatId,
-          status: 2,
-        },
-        { params: { token } },
-      )
-      .catch(err => console.log(err.response?.data || err.message));
   }
-
+  
   saveNewMessage(message, jid) {
-    console.log(jid,message);
     const phone = jid.replace(/[^0-9]+/g, '');
+
+    message.key.fromMe ? 
+      console.log('Message sent to', phone, 'from', this.token):
+      console.log('New message to', this.token, 'from', phone);
     this.database
       .ref(`${this.serverName}/tokens/${this.token}/chats/${phone}/messages/${message.key.id}`)
       .set(JSON.parse(JSON.stringify(message)));
@@ -218,7 +203,6 @@ class BaileysClient {
 
   sendMessageToWebHook(data) {
     console.log('Send Message to Webhook', this.webhookURL);
-    // console.log(data);
 
     axios
       .post(this.webhookURL, {

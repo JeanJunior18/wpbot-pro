@@ -1,4 +1,3 @@
-const { default: axios } = require('axios');
 const VenomClient = require('../libs/Venom');
 const BaileysClient = require('../libs/Baileys');
 const firebase = require('../../firebase');
@@ -24,12 +23,12 @@ class ClientManager {
 
   startService(token, clientInfo) {
     switch (process.env.ENGINE.toLowerCase()) {
-      case 'venom':
-        return new VenomClient(token, clientInfo);
-      case 'baileys':
-        return new BaileysClient(token, clientInfo);
-      default:
-        return new BaileysClient(token, clientInfo);
+    case 'venom':
+      return new VenomClient(token, clientInfo);
+    case 'baileys':
+      return new BaileysClient(token, clientInfo);
+    default:
+      return new BaileysClient(token, clientInfo);
     }
   }
 
@@ -127,35 +126,12 @@ class ClientManager {
         return res.status(410).json({ error: 'Phone number is not provided' });
 
       req.body.number = `${number}@c.us`;
-      const webhookURL = `${this.sessions[token].clientInfo.webhook}?token=${token}`;
+      // const webhookURL = `${this.sessions[token].clientInfo.webhook}?token=${token}`;
 
       this.sessions[token]
         .sendMessageToClient(req.body)
-        .then(msgResponse => {
-          axios
-            .post(webhookURL, {
-              cmd: 'ack',
-              chat_id: chatID,
-              ack: 2,
-              engine: 'venom',
-              message: msgResponse,
-            })
-            .catch(err => {
-              console.log('Error on send DELIVERED ACK - ', err.message);
-            });
-        })
         .catch(err => {
           console.log(err.message);
-          axios
-            .post(webhookURL, {
-              cmd: 'ack',
-              chat_id: chatID,
-              ack: 0,
-              engine: 'venom',
-            })
-            .catch(e => {
-              console.log('Error on send ERROR ACK - ', e.message);
-            });
         });
 
       return res.json({ message: 'Sending Message' });
@@ -247,13 +223,13 @@ class ClientManager {
 
   async attendanceMessages (req, res, next) {
     try {
-      const { limit } = req.query
-      const { phone } = req.params
-      const { token } = req.body
+      const { limit } = req.query;
+      const { phone } = req.params;
+      const { token } = req.body;
       const session = this.sessions[token];
-      const { messages } = await session.getHistoryMessages(phone, limit || 10)
+      session.getHistoryMessages(phone);
 
-      return res.json({count: limit, results: messages})
+      return res.json({message: 'Updadating Messages'});
     } catch (err) {
       return next(err);
     }
@@ -265,9 +241,9 @@ class ClientManager {
 
       const session = this.sessions[token];
 
-      const chats = await session.getChats()
+      const chats = await session.getChats();
 
-      return res.json(chats)
+      return res.json(chats);
     } catch (err) {
       return next(err);
     }
