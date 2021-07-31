@@ -106,11 +106,10 @@ class BaileysClient {
     await this.conn.loadAllMessages(
       `${phoneNumber}@s.whatsapp.net`,
       message => {
-        
         this.database
           .ref(`${this.serverName}/tokens/${this.token}/chats/${phoneNumber}/messages/${message.key.id}`)
           .set(JSON.parse(JSON.stringify(message)));
-      },1,true
+      },10,true
     );
   }
 

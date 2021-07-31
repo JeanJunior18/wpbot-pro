@@ -13,6 +13,7 @@ class ClientManager {
     this.getClientStatus = this.getClientStatus.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
     this.createToken = this.createToken.bind(this);
+    this.createUser = this.createUser.bind(this);
     this.deleteToken = this.deleteToken.bind(this);
     this.updateToken = this.updateToken.bind(this);
     this.restartAndLogout = this.restartAndLogout.bind(this);
@@ -120,7 +121,7 @@ class ClientManager {
 
   async sendMessage(req, res, next) {
     try {
-      const { token, number, chat_id: chatID } = req.body;
+      const { token, number } = req.body;
 
       if (!number)
         return res.status(410).json({ error: 'Phone number is not provided' });
@@ -151,6 +152,24 @@ class ClientManager {
       return res.json({
         message: `Token from ${organization} created - ${token}`,
       });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async createUser(req, res, next) {
+    try {
+      const { username, token, avatar } = req.body;
+      if(!username || !token) throw new Error('Missing data');
+
+      const user = { username, avatar, token };
+
+      await this.database
+        .ref(`${this.serverName}/tokens/${token}`)
+        .set({ user });
+
+
+      return res.json();
     } catch (err) {
       return next(err);
     }
@@ -223,7 +242,6 @@ class ClientManager {
 
   async attendanceMessages (req, res, next) {
     try {
-      const { limit } = req.query;
       const { phone } = req.params;
       const { token } = req.body;
       const session = this.sessions[token];
