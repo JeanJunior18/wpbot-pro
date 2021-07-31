@@ -51,7 +51,7 @@ class BaileysClient {
     if (this.clientInfo.sessionInfo)
       this.conn.loadAuthInfo(this.clientInfo.sessionInfo);
 
-    this.conn.removeAllListeners('qr');
+    // this.conn.removeAllListeners('qr');
 
     this.conn.on('chats-received', async () => {
       
@@ -71,14 +71,16 @@ class BaileysClient {
       this.clientStatusRef.update({ qrCodeUrl: await QRCode.toDataURL(qr) });
     });
 
-    await this.conn.connect().catch(console.error);
+    await this.conn.connect().catch(async () => {
+      this.conn.clearAuthInfo();
+      this.database
+        .ref(`${this.serverName}/tokens/${this.token}/sessionInfo`).remove();
+
+      await this.conn.connect();
+    });
     this.conn.version = [2, 2123, 7];
 
     this.conn.on('chat-update', chatUpdate => {
-      // if(!this.capturedChats) { 
-      //   this.saveAllChats();
-      //   this.capturedChats= true;
-      // }
       if (chatUpdate.messages) {
         const message = chatUpdate.messages.all()[0];
 
@@ -100,7 +102,7 @@ class BaileysClient {
     return this.conn.state;
   }
 
-  async getHistoryMessages(phoneNumber, limit = 10) {
+  async getHistoryMessages(phoneNumber) {
     await this.conn.loadAllMessages(
       `${phoneNumber}@s.whatsapp.net`,
       message => {
