@@ -177,8 +177,22 @@ class BaileysClient {
       caption,
       filename,
       message,
+      buttons,
+      contentText,
+      footerText
     } = data;
 
+    if (type === 'buttonsMessage'){
+      
+      
+      const buttonMessage = {
+        contentText,
+        footerText,
+        buttons,
+        headerType: 1
+      };
+      await this.conn.sendMessage(number, buttonMessage, type);
+    }
     if (type === 'conversation') {
       await this.conn.sendMessage(number, message, type);
     } else {
