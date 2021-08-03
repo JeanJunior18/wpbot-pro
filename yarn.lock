@@ -2,6 +2,24 @@
 # yarn lockfile v1
 
 
+"@adiwajshing/baileys@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@adiwajshing/baileys/-/baileys-3.5.1.tgz#fea9ab1244969a907b0f125b76eb201526c90df2"
+  integrity sha512-Gnqzhh4xFRu9zLTqHeJSztPD80RlKwfqQIbLfc8wjk1A+PgneGgYYPuuiKnQa0Tot8rUvPqX7yTbtxu9Tq5iQQ==
+  dependencies:
+    "@adiwajshing/keyed-db" "^0.2.2"
+    curve25519-js "^0.0.4"
+    futoin-hkdf "^1.3.2"
+    got "^11.8.1"
+    https-proxy-agent "^5.0.0"
+    jimp "^0.16.1"
+    music-metadata "^7.4.1"
+    pino "^6.7.0"
+    pino-pretty "^4.3.0"
+    protobufjs "^6.10.1"
+    qrcode-terminal "^0.12.0"
+    ws "^7.3.1"
+
 "@adiwajshing/baileys@github:adiwajshing/baileys":
   version "3.5.1"
   resolved "https://codeload.github.com/adiwajshing/baileys/tar.gz/fa73a6cf4c7fbf422a8ec3032f0f75accdc5aaac"
